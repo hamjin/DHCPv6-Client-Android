@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <SwitchPreference
-        android:key="service"
-        android:title="Service switch"
-        android:persistent="false"/>
-    <SwitchPreference
         android:key="service.batteryKiller"
         android:title="Battery optimization"
         android:summaryOff="Not optimized"

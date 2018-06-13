@@ -27,12 +27,6 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.preferenceDataStore = SharedPreferenceDataStore(app.pref)
         addPreferencesFromResource(R.xml.pref_main)
-        val service = findPreference("service") as SwitchPreference
-        service.isChecked = BootReceiver.enabled
-        service.setOnPreferenceChangeListener { _, value ->
-            setServiceEnabled(value as Boolean)
-            true
-        }
         batteryKiller = findPreference("service.batteryKiller") as SwitchPreference
         batteryKiller.setOnPreferenceChangeListener { _, _ ->
             if (Build.VERSION.SDK_INT >= 23)
@@ -40,7 +34,6 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
             false
         }
         val context = requireContext()
-        if (!Dhcp6cService.running) context.startService(Intent(context, Dhcp6cService::class.java))
         findPreference("misc.source").setOnPreferenceClickListener {
             customTabsIntent.launchUrl(requireActivity(), Uri.parse("https://github.com/Mygod/DHCPv6-Client-Android"))
             true
@@ -52,12 +45,5 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
         val context = requireContext()
         batteryKiller.isChecked = Build.VERSION.SDK_INT >= 23 &&
                 !context.systemService<PowerManager>().isIgnoringBatteryOptimizations(context.packageName)
-    }
-
-    private fun setServiceEnabled(enabled: Boolean) {
-        BootReceiver.enabled = enabled
-        val context = requireContext()
-        if (enabled && !Dhcp6cService.running) context.startService(Intent(context, Dhcp6cService::class.java))
-        else if (!enabled && Dhcp6cService.running) context.stopService(Intent(context, Dhcp6cService::class.java))
     }
 }
