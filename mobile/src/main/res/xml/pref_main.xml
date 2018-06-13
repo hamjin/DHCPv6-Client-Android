@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:key="service"
+        android:title="Service switch"
+        android:persistent="false"/>
+    <Preference
+        android:key="misc.source"
+        android:icon="@drawable/ic_toggle_star"
+        android:title="@string/settings_misc_source"
+        android:summary="@string/settings_misc_source_summary"/>
+</PreferenceScreen>
