@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">DHCPv6 Client</string>
+    <string name="settings_service_battery_killer_summary_on">Optimizing battery use, no need to change this</string>
+    <string name="settings_service_battery_killer_summary_on_v26">Service will be killed if left in background for one
+        minute</string>
     <string name="settings_misc_source">View on GitHub</string>
     <string name="settings_misc_source_summary">Star, submit issues and contribute</string>
 </resources>

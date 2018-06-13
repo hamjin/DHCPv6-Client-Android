@@ -4,6 +4,12 @@
         android:key="service"
         android:title="Service switch"
         android:persistent="false"/>
+    <SwitchPreference
+        android:key="service.batteryKiller"
+        android:title="Battery optimization"
+        android:summaryOff="Not optimized"
+        android:summaryOn="@string/settings_service_battery_killer_summary_on"
+        android:persistent="false"/>
     <Preference
         android:key="misc.source"
         android:icon="@drawable/ic_toggle_star"
