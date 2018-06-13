@@ -2,6 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <SwitchPreference
         android:key="service.batteryKiller"
+        android:icon="@drawable/ic_device_battery_alert"
         android:title="Battery optimization"
         android:summaryOff="Not optimized"
         android:summaryOn="@string/settings_service_battery_killer_summary_on"

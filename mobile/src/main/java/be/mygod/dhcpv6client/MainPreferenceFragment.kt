@@ -9,7 +9,6 @@ import android.provider.Settings
 import android.support.customtabs.CustomTabsIntent
 import android.support.v14.preference.SwitchPreference
 import android.support.v4.content.ContextCompat
-import android.support.v7.preference.Preference
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.preference.SharedPreferenceDataStore
 import be.mygod.dhcpv6client.util.systemService
@@ -33,7 +32,6 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
                 requireContext().startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             false
         }
-        val context = requireContext()
         findPreference("misc.source").setOnPreferenceClickListener {
             customTabsIntent.launchUrl(requireActivity(), Uri.parse("https://github.com/Mygod/DHCPv6-Client-Android"))
             true
