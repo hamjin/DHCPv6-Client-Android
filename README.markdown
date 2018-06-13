@@ -34,5 +34,5 @@ Installation
 
 Known Issues
 ------------
-### DHCPv6 Client ask me everytime if I want to install the client
-Update or reinstall busybox
+### Not working?
+Try turning off and on service; wiping app data can help too.

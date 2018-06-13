@@ -1,3 +1,4 @@
+import com.android.build.OutputFile
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -78,8 +79,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
-
-kapt.generateStubs = true
 
 apply plugin: 'com.google.gms.google-services'
 
