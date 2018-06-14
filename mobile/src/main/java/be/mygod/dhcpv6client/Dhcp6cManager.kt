@@ -3,6 +3,7 @@ package be.mygod.dhcpv6client
 import android.os.Build
 import android.util.Base64
 import android.util.Log
+import android.widget.Toast
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.room.Database
 import be.mygod.dhcpv6client.room.InterfaceStatement
@@ -107,6 +108,7 @@ id-assoc na %num { };""")) != -1L
             val eval = process.exitValue()
             if (eval != 0) {
                 val msg = "$DHCP6C exited with $eval"
+                Toast.makeText(app, msg, Toast.LENGTH_LONG).show()
                 Crashlytics.log(Log.ERROR, DHCP6C, msg)
                 Crashlytics.logException(NativeProcessError(msg))
             }
