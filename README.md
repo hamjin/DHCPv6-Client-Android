@@ -11,11 +11,19 @@ Requires root, obviously.
 This is [another](https://github.com/realmar/DHCPv6-Client-Android) wrapper of wide-dhcpv6 for Android that's designed
  to work with the latest Android releases.
 
+
 ## Q & A
 
 ### Not working?
 
 Try turning off and on service; turning off and on Wi-Fi; wiping app data (which will clean the old DUID) can help too.
+
+### How is this different from the other app?
+
+* Supports Android 5.0+ while the other app supports Android 4.1 up to [6.0](https://github.com/realmar/DHCPv6-Client-Android/issues/8);
+* Completely systemless and doesn't require Busybox; (no extra steps for install/uninstall)
+* Fewer settings. (open an issue/PR if you think you need some other options, I'm very lazy)
+
 
 ## Open Source Licenses
 
