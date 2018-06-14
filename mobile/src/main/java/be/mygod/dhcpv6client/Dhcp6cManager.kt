@@ -31,6 +31,7 @@ object Dhcp6cManager {
     private val controlKey = File(sysconf, "dhcp6cctlkey")
 
     private var daemon: Process? = null
+    private var daemonDaemon: Thread? = null
 
     private fun setupEnvironment() = synchronized(this) {
         check(localdb.mkdirs() || localdb.isDirectory)
@@ -49,15 +50,28 @@ object Dhcp6cManager {
         }.joinToString("\n"))
     }
 
+    private fun ensureStatements(interfaces: Iterable<String>) = interfaces.any {
+        // TODO: configurable default interface statement
+        Database.interfaceStatementDao.createDefault(InterfaceStatement(it, """{
+	send ia-na %num;
+	request domain-name-servers;
+	request domain-name;
+};
+id-assoc na %num { };""")) != -1L
+    }
+
     private object Success : IOException()
     @Throws(IOException::class)
-    private fun startDaemon(interfaces: List<String>) {
+    fun startDaemon(interfaces: Iterable<String>) {
+        setupEnvironment()
+        val allInterfaces = Database.interfaceStatementDao.list().map { it.iface }.toSet() + interfaces
+        if (ensureStatements(interfaces)) updateConfig()
         val process = synchronized(this) {
-            if (daemon != null) return
-            Crashlytics.log(Log.DEBUG, DHCP6C, "Starting $interfaces...")
+            check(daemon == null)
+            Crashlytics.log(Log.DEBUG, DHCP6C, "Starting ${allInterfaces.joinToString()}...")
             val process = ProcessBuilder("su", "-c", "echo Success && " +
                     File(app.applicationInfo.nativeLibraryDir, DHCP6C).absolutePath +
-                    " -Df -p ${pidFile.absolutePath} " + interfaces.joinToString(" "))  // TODO log level configurable?
+                    " -Df -p ${pidFile.absolutePath} " + allInterfaces.joinToString(" "))  // TODO log level configurable?
                     .directory(root)
                     .redirectErrorStream(true)
                     .start()!!
@@ -65,7 +79,7 @@ object Dhcp6cManager {
             process
         }
         val excQueue = ArrayBlockingQueue<IOException>(1)   // ArrayBlockingQueue doesn't want null
-        thread(DHCP6C) {
+        daemonDaemon = thread(DHCP6C) {
             var pushed = false
             fun pushException(ioException: IOException) = if (pushed) {
                 ioException.printStackTrace()
@@ -99,11 +113,12 @@ object Dhcp6cManager {
             synchronized(this) {
                 check(daemon == process)
                 daemon = null
+                daemonDaemon = null
             }
         }
         val exc = excQueue.take()
-        if (exc !is Success) throw exc
-        Thread.sleep(100)   // HACK: wait for dhcp6c spin up so that we can issue it commands
+        if (exc !== Success) throw exc
+        Thread.sleep(100)   // HACK: wait for dhcp6c to spin up so that we can issue it commands
     }
 
     @Throws(IOException::class)
@@ -139,24 +154,23 @@ object Dhcp6cManager {
      * the interface.
      */
     fun startInterface(iface: String) {
-        setupEnvironment()
-        // TODO: configurable default interface statement
-        val updated = Database.interfaceStatementDao.createDefault(InterfaceStatement(iface, """{
-	send ia-na %num;
-	request domain-name-servers;
-	request domain-name;
-};
-id-assoc na %num { };""")) != -1L
-        if (updated) reloadConfig()
+        val updated = ensureStatements(listOf(iface))
         synchronized(this) {
-            // there is still an inevitable race condition here :|
-            if (daemon == null) {
-                stopDaemon()    // kill existing daemons if any
-                if (!updated) updateConfig()
-                startDaemon(listOf(iface))
-            } else {
-                Crashlytics.log(Log.DEBUG, DHCP6CTL, "Requesting $iface...")
-                sendControlCommand("start", "interface", iface)
+            when {
+                updated -> {
+                    stopDaemonSync()    // there's no way to load new interfaces afaic
+                    updateConfig()
+                    startDaemon(listOf(iface))
+                }
+                daemon == null -> {     // there is still an inevitable race condition here :|
+                    stopDaemon()        // kill existing daemons if any
+                    updateConfig()
+                    startDaemon(listOf(iface))
+                }
+                else -> {
+                    Crashlytics.log(Log.DEBUG, DHCP6CTL, "Requesting $iface...")
+                    sendControlCommand("start", "interface", iface)
+                }
             }
         }
     }
@@ -180,5 +194,11 @@ id-assoc na %num { };""")) != -1L
         sendControlCommand("stop")
     } catch (e: IOException) {
         Crashlytics.log(Log.INFO, DHCP6C, e.message)
+    }
+
+    fun stopDaemonSync() {
+        if (daemon == null) return
+        stopDaemon()
+        daemonDaemon?.join()
     }
 }
