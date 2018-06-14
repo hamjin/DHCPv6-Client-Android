@@ -1,0 +1,39 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "21916358e447e079b879d80ca831b9c4",
+    "entities": [
+      {
+        "tableName": "InterfaceStatement",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`iface` TEXT NOT NULL, `statements` TEXT NOT NULL, PRIMARY KEY(`iface`))",
+        "fields": [
+          {
+            "fieldPath": "iface",
+            "columnName": "iface",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statements",
+            "columnName": "statements",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "iface"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"21916358e447e079b879d80ca831b9c4\")"
+    ]
+  }
+}

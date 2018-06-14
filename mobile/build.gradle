@@ -37,6 +37,11 @@ android {
 //                arguments "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
             }
         }
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
     buildTypes {
         debug {
