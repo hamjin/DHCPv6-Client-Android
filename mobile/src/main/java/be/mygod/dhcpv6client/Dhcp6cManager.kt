@@ -189,7 +189,7 @@ id-assoc na %num { };""")) != -1L
      * client, it will release all configuration information (if any)
      * and exits.
      */
-    fun stopDaemon() = try {
+    private fun stopDaemon() = try {
         sendControlCommand("stop")
     } catch (e: IOException) {
         Crashlytics.log(Log.INFO, DHCP6C, e.message)
