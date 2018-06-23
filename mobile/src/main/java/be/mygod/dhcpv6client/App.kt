@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
+import android.os.Handler
 import android.preference.PreferenceManager
 import be.mygod.dhcpv6client.room.Database
 
@@ -26,4 +27,5 @@ class App : Application() {
 
     lateinit var deviceContext: Context
     val pref: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(deviceContext) }
+    val handler = Handler()
 }

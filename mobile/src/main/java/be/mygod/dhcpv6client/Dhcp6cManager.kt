@@ -105,7 +105,7 @@ id-assoc na %num { };""")) != -1L
             val eval = process.exitValue()
             if (eval != 0) {
                 val msg = "$DHCP6C exited with $eval"
-                Toast.makeText(app, msg, Toast.LENGTH_LONG).show()
+                app.handler.post { Toast.makeText(app, msg, Toast.LENGTH_LONG).show() }
                 Crashlytics.log(Log.ERROR, DHCP6C, msg)
                 Crashlytics.logException(NativeProcessError(msg))
             }
