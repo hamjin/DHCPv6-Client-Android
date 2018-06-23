@@ -63,7 +63,7 @@ id-assoc na %num { };""")) != -1L
 
     private object Success : IOException()
     @Throws(IOException::class)
-    fun startDaemonLocked(interfaces: Iterable<String>) {
+    private fun startDaemonLocked(interfaces: Iterable<String>) {
         setupEnvironment()
         val allInterfaces = Database.interfaceStatementDao.list().map { it.iface }.toSet() + interfaces
         if (ensureStatements(interfaces)) updateConfig()
@@ -119,6 +119,7 @@ id-assoc na %num { };""")) != -1L
         if (exc !== Success) throw exc
         Thread.sleep(100)   // HACK: wait for dhcp6c to spin up so that we can issue it commands
     }
+    fun startDaemon(interfaces: Iterable<String>) = synchronized(this) { startDaemonLocked(interfaces) }
 
     @Throws(IOException::class)
     private fun sendControlCommand(vararg commands: String) {

@@ -63,7 +63,7 @@ class Dhcp6cService : Service() {
                 callback.working[it] = connectivity.getLinkProperties(it)?.interfaceName ?: return@forEach
             }
             Dhcp6cManager.dhcpv6Configured[this] = callback::onDhcpv6Configured
-            synchronized(this) { Dhcp6cManager.startDaemonLocked(callback.working.values) }
+            Dhcp6cManager.startDaemon(callback.working.values)
             connectivity.registerNetworkCallback(request, callback)
             callback.registered = true
         }
