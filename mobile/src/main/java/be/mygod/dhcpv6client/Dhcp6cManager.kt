@@ -63,22 +63,19 @@ id-assoc na %num { };""")) != -1L
 
     private object Success : IOException()
     @Throws(IOException::class)
-    fun startDaemon(interfaces: Iterable<String>) {
+    fun startDaemonLocked(interfaces: Iterable<String>) {
         setupEnvironment()
         val allInterfaces = Database.interfaceStatementDao.list().map { it.iface }.toSet() + interfaces
         if (ensureStatements(interfaces)) updateConfig()
-        val process = synchronized(this) {
-            check(daemon == null)
-            Crashlytics.log(Log.DEBUG, DHCP6C, "Starting ${allInterfaces.joinToString()}...")
-            val process = ProcessBuilder("su", "-c", "echo Success && " +
-                    File(app.applicationInfo.nativeLibraryDir, DHCP6C).absolutePath +
-                    " -Df -p ${pidFile.absolutePath} " + allInterfaces.joinToString(" "))  // TODO log level configurable?
-                    .directory(root)
-                    .redirectErrorStream(true)
-                    .start()!!
-            daemon = process
-            process
-        }
+        check(daemon == null)
+        Crashlytics.log(Log.DEBUG, DHCP6C, "Starting ${allInterfaces.joinToString()}...")
+        val process = ProcessBuilder("su", "-c", "echo Success && " +
+                File(app.applicationInfo.nativeLibraryDir, DHCP6C).absolutePath +
+                " -Df -p ${pidFile.absolutePath} " + allInterfaces.joinToString(" "))  // TODO log level configurable?
+                .directory(root)
+                .redirectErrorStream(true)
+                .start()!!
+        daemon = process
         val excQueue = ArrayBlockingQueue<IOException>(1)   // ArrayBlockingQueue doesn't want null
         daemonDaemon = thread(DHCP6C) {
             var pushed = false
@@ -162,12 +159,12 @@ id-assoc na %num { };""")) != -1L
                 updated -> {
                     stopDaemonSync()    // there's no way to load new interfaces afaic
                     updateConfig()
-                    startDaemon(listOf(iface))
+                    startDaemonLocked(listOf(iface))
                 }
                 daemon == null -> {     // there is still an inevitable race condition here :|
                     stopDaemon()        // kill existing daemons if any
                     updateConfig()
-                    startDaemon(listOf(iface))
+                    startDaemonLocked(listOf(iface))
                 }
                 else -> {
                     Crashlytics.log(Log.DEBUG, DHCP6CTL, "Requesting $iface...")
