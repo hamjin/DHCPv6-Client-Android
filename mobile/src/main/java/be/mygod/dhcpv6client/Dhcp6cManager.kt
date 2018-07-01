@@ -192,6 +192,7 @@ id-assoc na %num { };""")) != -1L
      */
     private fun stopDaemon() = try {
         sendControlCommand("stop")
+        Thread.sleep(1000)  // TODO better ways to ensure dhcp6c is shut down
     } catch (e: IOException) {
         Crashlytics.log(Log.INFO, DHCP6C, e.message)
     }
