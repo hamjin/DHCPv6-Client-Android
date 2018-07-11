@@ -8,11 +8,10 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="preferenceTheme">@style/AppTheme.Preference</item>
     </style>
-    <style name="AppTheme.Preference" parent="PreferenceThemeOverlay.v14.Material.Fix">
+    <style name="AppTheme.Preference" parent="PreferenceThemeOverlay.v14.Material">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="preferenceCategory_marginBottom">8dp</item>
     </style>
 
 </resources>

@@ -1,10 +1,10 @@
 package be.mygod.dhcpv6client.room
 
-import android.arch.persistence.room.*
+import androidx.room.*
 
 @Entity
 data class InterfaceStatement(@PrimaryKey val iface: String, var statements: String) {
-    @android.arch.persistence.room.Dao
+    @androidx.room.Dao
     interface Dao {
         @Query("SELECT * FROM `InterfaceStatement` ORDER BY `iface`")
         fun list(): List<InterfaceStatement>

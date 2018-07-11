@@ -9,7 +9,7 @@ import android.net.NetworkRequest
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import be.mygod.dhcpv6client.util.systemService
+import androidx.core.content.getSystemService
 import com.crashlytics.android.Crashlytics
 import java.io.IOException
 
@@ -18,7 +18,7 @@ class Dhcp6cService : Service() {
         var running = false
     }
 
-    private val connectivity by lazy { systemService<ConnectivityManager>() }
+    private val connectivity by lazy { getSystemService<ConnectivityManager>()!! }
     private val request = NetworkRequest.Builder()
             .removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
             .build()

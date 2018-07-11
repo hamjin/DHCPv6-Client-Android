@@ -7,8 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.content.getSystemService
 import be.mygod.dhcpv6client.App.Companion.app
-import be.mygod.dhcpv6client.util.systemService
 
 class BootReceiver : BroadcastReceiver() {
     companion object {
@@ -29,7 +29,7 @@ class BootReceiver : BroadcastReceiver() {
             Intent.ACTION_LOCKED_BOOT_COMPLETED -> true // constant will be folded so no need to do version checks
             else -> return
         }
-        if ((Build.VERSION.SDK_INT >= 24 && context.systemService<DevicePolicyManager>().storageEncryptionStatus ==
+        if ((Build.VERSION.SDK_INT >= 24 && context.getSystemService<DevicePolicyManager>()?.storageEncryptionStatus ==
                         DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER) == locked)
             context.startService(Intent(context, Dhcp6cService::class.java))
     }

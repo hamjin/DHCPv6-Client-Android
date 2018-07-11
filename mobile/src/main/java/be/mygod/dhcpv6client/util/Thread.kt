@@ -1,12 +1,8 @@
 package be.mygod.dhcpv6client.util
 
-import android.content.Context
-import android.support.v4.content.ContextCompat
 import android.widget.Toast
 import be.mygod.dhcpv6client.App.Companion.app
 import com.crashlytics.android.Crashlytics
-
-inline fun <reified T> Context.systemService() = ContextCompat.getSystemService(this, T::class.java)!!
 
 /**
  * Wrapper for kotlin.concurrent.thread that silences uncaught exceptions.
