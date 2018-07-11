@@ -33,8 +33,8 @@ add_executable( dhcp6ctl.so
 target_include_directories(dhcp6c.so PRIVATE ${ROOT})
 target_include_directories(dhcp6ctl.so PRIVATE ${ROOT})
 
-add_definitions(-DSYSCONFDIR="./sysconf")
-add_definitions(-DLOCALDBDIR="./localdb")
+add_definitions(-DSYSCONFDIR=".")
+add_definitions(-DLOCALDBDIR=".")
 add_definitions(-DLINE_MAX=120)
 add_definitions(-DHAVE_GETADDRINFO=1 -DHAVE_GETNAMEINFO=1 -DHAVE_IF_NAMETOINDEX=1 -DHAVE_STRLCPY=1 -DHAVE_STRLCAT=1
                 -DHAVE_DAEMON=1 -DHAVE_WARNX=1 -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1

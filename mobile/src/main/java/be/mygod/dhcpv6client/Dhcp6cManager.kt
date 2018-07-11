@@ -1,7 +1,5 @@
 package be.mygod.dhcpv6client
 
-import android.os.Build
-import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import be.mygod.dhcpv6client.App.Companion.app
@@ -12,7 +10,6 @@ import be.mygod.dhcpv6client.util.thread
 import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.io.IOException
-import java.security.SecureRandom
 import java.util.concurrent.ArrayBlockingQueue
 
 object Dhcp6cManager {
@@ -25,24 +22,11 @@ object Dhcp6cManager {
     class NativeProcessError(message: String?) : IOException(message)
 
     private val root = app.deviceContext.noBackupFilesDir
-    private val localdb = File(root, "localdb")
-    private val sysconf = File(root, "sysconf")
     private val pidFile = File(root, "dhcp6c.pid")
-    private val config = File(sysconf, "dhcp6c.conf")
-    private val controlKey = File(sysconf, "dhcp6cctlkey")
+    private val config = File(root, "dhcp6c.conf")
 
     private var daemon: Process? = null
     private var daemonDaemon: Thread? = null
-
-    private fun setupEnvironment() = synchronized(this) {
-        check(localdb.mkdirs() || localdb.isDirectory)
-        check(sysconf.mkdirs() || sysconf.isDirectory)
-        if (!controlKey.exists()) {
-            val bytes = ByteArray(16)   // HMAC-MD5 uses 128 bits
-            (if (Build.VERSION.SDK_INT >= 26) SecureRandom.getInstanceStrong() else SecureRandom()).nextBytes(bytes)
-            controlKey.writeBytes(Base64.encode(bytes, Base64.NO_WRAP))
-        }
-    }
 
     private fun updateConfig() = synchronized(this) {
         config.writeText(Database.interfaceStatementDao.list().mapIndexed { i, statement ->
@@ -64,7 +48,6 @@ id-assoc na %num { };""")) != -1L
     private object Success : IOException()
     @Throws(IOException::class)
     private fun startDaemonLocked(interfaces: Iterable<String>) {
-        setupEnvironment()
         val allInterfaces = Database.interfaceStatementDao.list().map { it.iface }.toSet() + interfaces
         if (ensureStatements(interfaces)) updateConfig()
         check(daemon == null)
