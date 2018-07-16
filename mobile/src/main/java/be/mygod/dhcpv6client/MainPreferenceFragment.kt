@@ -15,12 +15,6 @@ import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.preference.SharedPreferenceDataStore
 
 class MainPreferenceFragment : PreferenceFragmentCompat() {
-    private val customTabsIntent by lazy {
-        CustomTabsIntent.Builder()
-                .setToolbarColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
-                .build()
-    }
-
     private lateinit var batteryKiller: SwitchPreference
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -33,7 +27,11 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
             false
         }
         findPreference("misc.source").setOnPreferenceClickListener {
-            customTabsIntent.launchUrl(requireActivity(), "https://github.com/Mygod/DHCPv6-Client-Android".toUri())
+            app.launchUrl("https://github.com/Mygod/DHCPv6-Client-Android".toUri())
+            true
+        }
+        findPreference("misc.donate").setOnPreferenceClickListener {
+            EBegFragment().show(fragmentManager, "ebeg_fragment")
             true
         }
     }

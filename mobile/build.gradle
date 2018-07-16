@@ -27,8 +27,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 28
         resConfigs "zh-rCN"
-        versionCode 100
-        versionName "0.0.1"
+        versionCode 10000
+        versionName "0.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         externalNativeBuild {
@@ -67,6 +67,17 @@ android {
             universalApk true
         }
     }
+    flavorDimensions("freedom")
+    productFlavors {
+        freedom {
+            dimension "freedom"
+            buildConfigField "boolean", "DONATIONS", "true"
+        }
+        google {
+            dimension "freedom"
+            buildConfigField "boolean", "DONATIONS", "false"
+        }
+    }
 }
 
 dependencies {
@@ -75,6 +86,7 @@ dependencies {
     implementation "androidx.core:core-ktx:$androidxVersion"
     implementation "androidx.preference:preference:$androidxVersion"
     implementation "androidx.room:room-runtime:$roomVersion"
+    implementation 'com.android.billingclient:billing:1.1'
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.4'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
     kapt "androidx.room:room-compiler:$roomVersion"
