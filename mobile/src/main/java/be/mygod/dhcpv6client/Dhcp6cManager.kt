@@ -35,7 +35,7 @@ object Dhcp6cManager {
         }.joinToString("\n"))
     }
 
-    private fun ensureStatements(interfaces: Iterable<String>) = interfaces.any {
+    private fun ensureStatements(interfaces: Iterable<String>) = interfaces.map {
         // TODO: configurable default interface statement
         Database.interfaceStatementDao.createDefault(InterfaceStatement(it, """{
 	send ia-na %num;
@@ -43,7 +43,7 @@ object Dhcp6cManager {
 	request domain-name;
 };
 id-assoc na %num { };""")) != -1L
-    }
+    }.any { it }
 
     private object Success : IOException()
     @Throws(IOException::class)

@@ -21,10 +21,10 @@ class Dhcp6cService : Service() {
         var enabled: Boolean
             get() = BootReceiver.enabled
             set(value) {
-                if (value == BootReceiver.enabled) return
-                BootReceiver.enabled = value
                 if (value && !Dhcp6cService.running) app.startService(Intent(app, Dhcp6cService::class.java))
                 else if (!value && Dhcp6cService.running) app.stopService(Intent(app, Dhcp6cService::class.java))
+                if (value == BootReceiver.enabled) return
+                BootReceiver.enabled = value
                 enabledChanged(value)
             }
         val enabledChanged = StickyEvent1 { enabled }
