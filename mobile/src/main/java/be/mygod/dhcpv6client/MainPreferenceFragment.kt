@@ -27,7 +27,7 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
             false
         }
         findPreference("misc.source").setOnPreferenceClickListener {
-            app.launchUrl("https://github.com/Mygod/DHCPv6-Client-Android".toUri())
+            (activity as MainActivity).launchUrl("https://github.com/Mygod/DHCPv6-Client-Android".toUri())
             true
         }
         findPreference("misc.donate").setOnPreferenceClickListener {

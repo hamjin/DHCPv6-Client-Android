@@ -55,7 +55,7 @@ class EBegFragment : DialogFragment(), PurchasesUpdatedListener, BillingClientSt
         }
         @Suppress("ConstantConditionIf")
         if (BuildConfig.DONATIONS) (view.findViewById<ViewStub>(R.id.donations__more_stub).inflate() as Button)
-                .setOnClickListener { app.launchUrl("https://mygod.be/donate/".toUri()) }
+                .setOnClickListener { (activity as MainActivity).launchUrl("https://mygod.be/donate/".toUri()) }
     }
 
     private fun openDialog(title: Int, message: String) = AlertDialog.Builder(requireContext()).apply {
