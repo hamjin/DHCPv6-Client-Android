@@ -21,7 +21,7 @@ object Dhcp6cManager {
 
     class NativeProcessError(message: String?) : IOException(message)
 
-    private val root = app.deviceContext.noBackupFilesDir
+    private val root = app.deviceStorage.noBackupFilesDir
     private val pidFile = File(root, "dhcp6c.pid")
     private val config = File(root, "dhcp6c.conf")
 

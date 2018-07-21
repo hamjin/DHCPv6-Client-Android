@@ -10,7 +10,7 @@ abstract class Database : RoomDatabase() {
         const val DB_NAME = "data.db"
 
         private val instance by lazy {
-            Room.databaseBuilder(app.deviceContext, Database::class.java, DB_NAME)
+            Room.databaseBuilder(app.deviceStorage, Database::class.java, DB_NAME)
                     .allowMainThreadQueries()
                     .build()
         }

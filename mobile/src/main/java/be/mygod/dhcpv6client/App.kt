@@ -2,10 +2,12 @@ package be.mygod.dhcpv6client
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
 import android.os.Build
 import android.os.Handler
 import be.mygod.dhcpv6client.room.Database
+import be.mygod.dhcpv6client.util.DeviceStorageApp
+import com.crashlytics.android.Crashlytics
+import io.fabric.sdk.android.Fabric
 
 class App : Application() {
     companion object {
@@ -17,11 +19,12 @@ class App : Application() {
         super.onCreate()
         app = this
         if (Build.VERSION.SDK_INT >= 24) {
-            deviceContext = createDeviceProtectedStorageContext()
-            deviceContext.moveDatabaseFrom(this, Database.DB_NAME)
-        } else deviceContext = this
+            deviceStorage = DeviceStorageApp(this)
+            deviceStorage.moveDatabaseFrom(this, Database.DB_NAME)
+        } else deviceStorage = this
+        Fabric.with(deviceStorage, Crashlytics())
     }
 
-    lateinit var deviceContext: Context
+    lateinit var deviceStorage: Application
     val handler = Handler()
 }
