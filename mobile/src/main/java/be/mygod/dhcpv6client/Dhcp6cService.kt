@@ -10,12 +10,24 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.getSystemService
+import be.mygod.dhcpv6client.App.Companion.app
+import be.mygod.dhcpv6client.util.StickyEvent1
 import com.crashlytics.android.Crashlytics
 import java.io.IOException
 
 class Dhcp6cService : Service() {
     companion object {
         var running = false
+        var enabled: Boolean
+            get() = BootReceiver.enabled
+            set(value) {
+                if (value == BootReceiver.enabled) return
+                BootReceiver.enabled = value
+                if (value && !Dhcp6cService.running) app.startService(Intent(app, Dhcp6cService::class.java))
+                else if (!value && Dhcp6cService.running) app.stopService(Intent(app, Dhcp6cService::class.java))
+                enabledChanged(value)
+            }
+        val enabledChanged = StickyEvent1 { enabled }
     }
 
     private val connectivity by lazy { getSystemService<ConnectivityManager>()!! }
@@ -62,10 +74,18 @@ class Dhcp6cService : Service() {
             connectivity.allNetworks.forEach {
                 callback.working[it] = connectivity.getLinkProperties(it)?.interfaceName ?: return@forEach
             }
-            Dhcp6cManager.dhcpv6Configured[this] = callback::onDhcpv6Configured
-            Dhcp6cManager.startDaemon(callback.working.values)
-            connectivity.registerNetworkCallback(request, callback)
-            callback.registered = true
+            try {
+                Dhcp6cManager.startDaemon(callback.working.values)
+                Dhcp6cManager.dhcpv6Configured[this] = callback::onDhcpv6Configured
+                connectivity.registerNetworkCallback(request, callback)
+                callback.registered = true
+            } catch (e: IOException) {
+                Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
+                Crashlytics.logException(e)
+                e.printStackTrace()
+                stopSelf(startId)
+                enabled = false
+            }
         }
         return START_STICKY
     }

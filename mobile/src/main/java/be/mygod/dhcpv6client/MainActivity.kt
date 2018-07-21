@@ -1,9 +1,8 @@
 package be.mygod.dhcpv6client
 
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Switch
+import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var serviceSwitch: Switch
@@ -12,18 +11,22 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         serviceSwitch = findViewById(R.id.service_switch)
-        serviceSwitch.setOnCheckedChangeListener { _, value -> setServiceEnabled(value) }
+        serviceSwitch.setOnCheckedChangeListener { _, value -> Dhcp6cService.enabled = value }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Dhcp6cService.enabledChanged[this] = { serviceSwitch.isChecked = it }
     }
 
     override fun onResume() {
         super.onResume()
-        serviceSwitch.isChecked = BootReceiver.enabled
-        setServiceEnabled(BootReceiver.enabled)
+        serviceSwitch.isChecked = Dhcp6cService.enabled
+        Dhcp6cService.enabled = Dhcp6cService.enabled
     }
 
-    private fun setServiceEnabled(enabled: Boolean) {
-        BootReceiver.enabled = enabled
-        if (enabled && !Dhcp6cService.running) startService(Intent(this, Dhcp6cService::class.java))
-        else if (!enabled && Dhcp6cService.running) stopService(Intent(this, Dhcp6cService::class.java))
+    override fun onStop() {
+        Dhcp6cService.enabledChanged -= this
+        super.onStop()
     }
 }
