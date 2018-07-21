@@ -92,8 +92,8 @@ dependencies {
     kapt "androidx.room:room-compiler:$roomVersion"
     testImplementation "androidx.room:room-testing:$roomVersion"
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.0-alpha3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha3'
+    androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
 }
 
 apply plugin: 'com.google.gms.google-services'
