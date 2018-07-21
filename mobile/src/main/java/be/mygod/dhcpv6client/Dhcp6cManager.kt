@@ -11,12 +11,15 @@ import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 object Dhcp6cManager {
     private const val DHCP6C = "dhcp6c.so"
     private const val DHCP6CTL = "dhcp6ctl.so"
 
     private val addAddressParser = "ifaddrconf: add an address .+ on (.+)\$".toRegex()
+    private val lock = ReentrantLock()
     val dhcpv6Configured = Event1<String>()
 
     class NativeProcessError(message: String?) : IOException(message)
@@ -28,7 +31,7 @@ object Dhcp6cManager {
     private var daemon: Process? = null
     private var daemonDaemon: Thread? = null
 
-    private fun updateConfig() = synchronized(this) {
+    private fun updateConfig() = lock.withLock {
         config.writeText(Database.interfaceStatementDao.list().mapIndexed { i, statement ->
             statement.statements = statement.statements.replace("%num", i.toString())
             statement
@@ -92,7 +95,7 @@ id-assoc na %num { };""")) != -1L
                 Crashlytics.log(Log.ERROR, DHCP6C, msg)
                 Crashlytics.logException(NativeProcessError(msg))
             }
-            synchronized(this) {
+            lock.withLock {
                 check(daemon == process)
                 daemon = null
                 daemonDaemon = null
@@ -102,7 +105,7 @@ id-assoc na %num { };""")) != -1L
         if (exc !== Success) throw exc
         Thread.sleep(100)   // HACK: wait for dhcp6c to spin up so that we can issue it commands
     }
-    fun startDaemon(interfaces: Iterable<String>) = synchronized(this) { startDaemonLocked(interfaces) }
+    fun startDaemon(interfaces: Iterable<String>) = lock.withLock { startDaemonLocked(interfaces) }
 
     @Throws(IOException::class)
     private fun sendControlCommand(vararg commands: String) {
@@ -138,7 +141,7 @@ id-assoc na %num { };""")) != -1L
      */
     fun startInterface(iface: String) {
         val updated = ensureStatements(listOf(iface))
-        synchronized(this) {
+        lock.withLock {
             when {
                 updated -> {
                     stopDaemonSync()    // there's no way to load new interfaces afaic
@@ -183,6 +186,9 @@ id-assoc na %num { };""")) != -1L
     fun stopDaemonSync() {
         if (daemon == null) return
         stopDaemon()
+        val relock = lock.isHeldByCurrentThread
+        if (relock) lock.unlock()
         daemonDaemon?.join()
+        if (relock) lock.lock()
     }
 }
