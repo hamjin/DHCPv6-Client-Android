@@ -12,7 +12,6 @@ import android.widget.Button
 import android.widget.Spinner
 import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
-import be.mygod.dhcpv6client.App.Companion.app
 import com.android.billingclient.api.*
 import com.crashlytics.android.Crashlytics
 

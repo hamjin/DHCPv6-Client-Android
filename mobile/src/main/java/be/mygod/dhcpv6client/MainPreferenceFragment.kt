@@ -5,20 +5,15 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import androidx.browser.customtabs.CustomTabsIntent
-import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
-import be.mygod.dhcpv6client.App.Companion.app
-import be.mygod.dhcpv6client.preference.SharedPreferenceDataStore
 
 class MainPreferenceFragment : PreferenceFragmentCompat() {
     private lateinit var batteryKiller: SwitchPreference
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        preferenceManager.preferenceDataStore = SharedPreferenceDataStore(app.pref)
         addPreferencesFromResource(R.xml.pref_main)
         batteryKiller = findPreference("service.batteryKiller") as SwitchPreference
         batteryKiller.setOnPreferenceChangeListener { _, _ ->
