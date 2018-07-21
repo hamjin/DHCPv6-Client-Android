@@ -1,5 +1,6 @@
 package be.mygod.dhcpv6client
 
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import be.mygod.dhcpv6client.App.Companion.app
@@ -89,7 +90,7 @@ id-assoc na %num { };""")) != -1L
             }
             process.waitFor()
             val eval = process.exitValue()
-            if (eval != 0) {
+            if (eval != 0 && eval != 143) {
                 val msg = "$DHCP6C exited with $eval"
                 app.handler.post { Toast.makeText(app, msg, Toast.LENGTH_LONG).show() }
                 Crashlytics.log(Log.ERROR, DHCP6C, msg)
@@ -178,7 +179,6 @@ id-assoc na %num { };""")) != -1L
      */
     private fun stopDaemon() = try {
         sendControlCommand("stop")
-        Thread.sleep(1000)  // TODO better ways to ensure dhcp6c is shut down
     } catch (e: IOException) {
         Crashlytics.log(Log.INFO, DHCP6C, e.message)
     }
@@ -190,5 +190,10 @@ id-assoc na %num { };""")) != -1L
         if (relock) lock.unlock()
         daemonDaemon?.join()
         if (relock) lock.lock()
+    }
+
+    fun stopDaemonForcibly() {
+        val daemon = daemon ?: return
+        if (Build.VERSION.SDK_INT >= 26) daemon.destroyForcibly() else daemon.destroy()
     }
 }

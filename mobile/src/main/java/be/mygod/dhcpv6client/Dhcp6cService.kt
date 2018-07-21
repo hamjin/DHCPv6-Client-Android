@@ -46,7 +46,11 @@ class Dhcp6cService : Service() {
             } catch (e: IOException) {
                 e.printStackTrace()
                 Crashlytics.logException(e)
-                Toast.makeText(this@Dhcp6cService, e.message, Toast.LENGTH_LONG).show()
+                if (e.message?.contains("connect: Connection refused") == true) {
+                    // try to reboot service
+                    Dhcp6cManager.stopDaemonForcibly()
+                    Dhcp6cManager.startDaemon(working.values)
+                } else Toast.makeText(this@Dhcp6cService, e.message, Toast.LENGTH_LONG).show()
             }
         }
 
