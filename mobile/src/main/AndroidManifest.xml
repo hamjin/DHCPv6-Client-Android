@@ -27,7 +27,7 @@
 
         <service
             android:name=".Dhcp6cService"
-            android:label="dhcp6c.so"
+            android:label="libdhcp6c.so"
             android:directBootAware="true"/>
 
         <receiver

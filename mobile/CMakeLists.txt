@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.4.1)
 
 set(ROOT src/main/cpp/wide-dhcpv6)
 
-add_executable( dhcp6c.so
+add_executable( libdhcp6c.so
                 #src/main/cpp/android-ifaddrs/ifaddrs.c
                 #${ROOT}/missing/getifaddrs.c
                 #src/main/cpp/ifaddrs-android.cc
@@ -24,14 +24,14 @@ add_executable( dhcp6c.so
                 ${ROOT}/prefixconf.c
                 ${ROOT}/timer.c
 )
-add_executable( dhcp6ctl.so
+add_executable( libdhcp6ctl.so
                 ${ROOT}/auth.c
                 ${ROOT}/base64.c
                 ${ROOT}/dhcp6_ctlclient.c
 )
 
-target_include_directories(dhcp6c.so PRIVATE ${ROOT})
-target_include_directories(dhcp6ctl.so PRIVATE ${ROOT})
+target_include_directories(libdhcp6c.so PRIVATE ${ROOT})
+target_include_directories(libdhcp6ctl.so PRIVATE ${ROOT})
 
 add_definitions(-DSYSCONFDIR=".")
 add_definitions(-DLOCALDBDIR=".")
