@@ -24,6 +24,7 @@ Try turning off and on service; turning off and on Wi-Fi; wiping app data (which
 
 * Supports Android 5.0+ while the other app supports Android 4.1 up to [6.0](https://github.com/realmar/DHCPv6-Client-Android/issues/8);
 * Completely systemless and doesn't require Busybox; (no extra steps for install/uninstall)
+* No closed source components and licensed in Apache 2.0;
 * Fewer settings. (open an issue/PR if you think you need some other options, I'm very lazy)
 
 
