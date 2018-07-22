@@ -20,6 +20,12 @@ This is [another](https://github.com/realmar/DHCPv6-Client-Android) wrapper of w
 
 Try turning off and on service; turning off and on Wi-Fi; wiping app data (which will clean the old DUID) can help too.
 
+### Why do I need to turn off battery optimizations on Android 8.0+?
+
+Google doesn't want background services draining your battery. However, background services are crucial to this app so that you won't
+ get an annoying SU notification every time you connect to a network. This app shouldn't have an observable effect on your battery life
+ even with battery optimizations off. If it does, please open an issue.
+
 ### How is this different from [the other app](https://github.com/realmar/DHCPv6-Client-Android)?
 
 * Supports Android 5.0+ while the other app supports Android 4.1 up to [6.0](https://github.com/realmar/DHCPv6-Client-Android/issues/8);
