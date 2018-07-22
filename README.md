@@ -6,7 +6,9 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/665184d6cb6d446680c5ec56680c59ce)](https://www.codacy.com/app/Mygod/DHCPv6-Client-Android?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Mygod/DHCPv6-Client-Android&amp;utm_campaign=Badge_Grade)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Requires root, obviously.
+Requires root, obviously.  
+<a href="https://play.google.com/store/apps/details?id=be.mygod.dhcpv6client" target="_blank"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="60"></a>
+or <a href="https://labs.xda-developers.com/store/app/be.mygod.dhcpv6client" target="_blank">XDA Labs</a>
 
 This is [another](https://github.com/realmar/DHCPv6-Client-Android) wrapper of wide-dhcpv6 for Android that's designed
  to work with the latest Android releases.
