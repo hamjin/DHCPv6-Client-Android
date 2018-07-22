@@ -4,7 +4,8 @@
     <string name="settings_service_battery_killer">Android 系统电池优化</string>
     <string name="settings_service_battery_killer_summary_off">不优化</string>
     <string name="settings_service_battery_killer_summary_on">正在优化电池使用</string>
-    <string name="settings_service_battery_killer_summary_on_v26">后台时间超过一分钟后 Android 系统将杀死服务</string>
+    <string name="settings_service_battery_killer_summary_on_v26">后台时间超过一分钟后 Android
+        系统将杀死服务，且服务不会开机启动</string>
     <string name="settings_misc_source">查看 GitHub 上的源码</string>
     <string name="settings_misc_source_summary">查看开源协议, star, 提交 issues, 合作</string>
     <string name="settings_misc_donate">捐款</string>
