@@ -1,6 +1,5 @@
 package be.mygod.dhcpv6client
 
-import android.app.admin.DevicePolicyManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -25,16 +24,9 @@ class BootReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        val locked = when (intent.action) {
-            Intent.ACTION_BOOT_COMPLETED -> false
-            Intent.ACTION_LOCKED_BOOT_COMPLETED -> true // constant will be folded so no need to do version checks
-            else -> return
-        }
         context.apply {
-            if ((Build.VERSION.SDK_INT < 26 ||
-                            getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName) != false) &&
-                    locked == (Build.VERSION.SDK_INT >= 24 && getSystemService<DevicePolicyManager>()
-                            ?.storageEncryptionStatus == DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER)) {
+            if (Build.VERSION.SDK_INT < 26 ||
+                            getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName) != false) {
                 startService(Intent(this, Dhcp6cService::class.java))
             }
         }
