@@ -119,10 +119,7 @@ id-assoc na %num { };""")) != -1L
         process.waitFor()
         val eval = process.exitValue()
         if (eval != 0) throw NativeProcessError("$eval: $result")
-        if (result.isNotBlank()) {
-            Crashlytics.log(Log.WARN, DHCP6CTL, result)
-            Crashlytics.logException(NativeProcessError("$eval: $result"))
-        }
+        if (result.isNotBlank()) Crashlytics.log(Log.WARN, DHCP6CTL, result)
     }
 
     /**
