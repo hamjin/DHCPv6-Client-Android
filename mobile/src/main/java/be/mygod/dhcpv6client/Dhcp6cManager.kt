@@ -76,7 +76,7 @@ id-assoc na %num { };""")) != -1L
             try {
                 val reader = process.inputStream.bufferedReader()
                 val first = reader.readLine()
-                if (first != "Success") throw IOException(reader.readText())
+                if (first != "Success") throw IOException("$first\n${reader.use { it.readText() }}")
                 pushException(Success)
                 reader.useLines {
                     it.forEach {
