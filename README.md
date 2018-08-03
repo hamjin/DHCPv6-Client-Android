@@ -1,6 +1,6 @@
 # DHCPv6 Client
 
-[![Build Status](https://api.travis-ci.org/Mygod/DHCPv6-Client-Android.svg)](https://travis-ci.org/Mygod/DHCPv6-Client-Android)
+[![CircleCI](https://circleci.com/gh/Mygod/DHCPv6-Client-Android.svg?style=svg)](https://circleci.com/gh/Mygod/DHCPv6-Client-Android)
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
 [![Releases](https://img.shields.io/github/downloads/Mygod/DHCPv6-Client-Android/total.svg)](https://github.com/Mygod/DHCPv6-Client-Android/releases)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/665184d6cb6d446680c5ec56680c59ce)](https://www.codacy.com/app/Mygod/DHCPv6-Client-Android?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Mygod/DHCPv6-Client-Android&amp;utm_campaign=Badge_Grade)
