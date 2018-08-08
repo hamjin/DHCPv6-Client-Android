@@ -20,7 +20,7 @@ def getCurrentFlavor() {
 }
 
 android {
-    buildToolsVersion "28.0.1"
+    buildToolsVersion "28.0.2"
     compileSdkVersion 28
     defaultConfig {
         applicationId "be.mygod.dhcpv6client"

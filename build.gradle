@@ -3,9 +3,9 @@ apply plugin: "com.github.ben-manes.versions"
 buildscript {
     ext {
         kotlinVersion = '1.2.60'
-        androidxVersion = '1.0.0-beta01'
+        androidxVersion = '1.0.0-rc01'
         takisoftFixVersion = '27.1.1.2'
-        roomVersion = '2.0.0-beta01'
+        roomVersion = '2.0.0-rc01'
     }
     repositories {
         google()

@@ -78,12 +78,10 @@ id-assoc na %num { };""")) != -1L
                 val first = reader.readLine()
                 if (first != "Success") throw IOException("$first\n${reader.use { it.readText() }}")
                 pushException(Success)
-                reader.useLines {
-                    it.forEach {
-                        Crashlytics.log(Log.INFO, DHCP6C, it)
-                        val match = addAddressParser.find(it) ?: return@forEach
-                        dhcpv6Configured(match.groupValues[1])
-                    }
+                reader.forEachLine {
+                    Crashlytics.log(Log.INFO, DHCP6C, it)
+                    val match = addAddressParser.find(it) ?: return@forEachLine
+                    dhcpv6Configured(match.groupValues[1])
                 }
             } catch (e: IOException) {
                 pushException(e)
