@@ -61,7 +61,7 @@ class EBegFragment : DialogFragment(), PurchasesUpdatedListener, BillingClientSt
     }
 
     private fun openDialog(@StringRes title: Int, @StringRes message: Int) {
-        AlertDialog.Builder(context ?: return).apply {
+        AlertDialog.Builder(activity ?: return).apply {
             setTitle(title)
             setMessage(message)
             isCancelable = true
@@ -71,7 +71,7 @@ class EBegFragment : DialogFragment(), PurchasesUpdatedListener, BillingClientSt
 
     override fun onBillingServiceDisconnected() {
         skus = null
-        billingClient = BillingClient.newBuilder(view!!.context).setListener(this).build()
+        billingClient = BillingClient.newBuilder(context ?: return).setListener(this).build()
                 .also { it.startConnection(this) }
     }
     override fun onBillingSetupFinished(responseCode: Int) {
@@ -99,7 +99,7 @@ class EBegFragment : DialogFragment(), PurchasesUpdatedListener, BillingClientSt
     override fun onConsumeResponse(responseCode: Int, purchaseToken: String?) {
         if (responseCode == BillingClient.BillingResponse.OK) {
             openDialog(R.string.donations__thanks_dialog_title, R.string.donations__thanks_dialog)
-            dismiss()
+            dismissAllowingStateLoss()
         } else Crashlytics.log(Log.ERROR, TAG, "onConsumeResponse: $responseCode")
     }
 }
