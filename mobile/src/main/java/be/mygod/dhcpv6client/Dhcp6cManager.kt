@@ -185,6 +185,7 @@ id-assoc na %num { };""")) != -1L
         if (relock) lock.unlock()
         daemonDaemon?.join()
         if (relock) lock.lock()
+        check(daemon == null)
     }
 
     fun stopDaemonForcibly() {
