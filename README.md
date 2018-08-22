@@ -28,6 +28,7 @@ Google doesn't want background services draining your battery. However, backgrou
 
 ### How is this different from [the other app](https://github.com/realmar/DHCPv6-Client-Android)?
 
+* More stable on devices with kernel 3.9+ (`wide-dhcpv6` is able to use `SO_REUSEPORT`);
 * Supports Android 5.0+ while the other app supports Android 4.1 up to [6.0](https://github.com/realmar/DHCPv6-Client-Android/issues/8);
 * Completely systemless and doesn't require Busybox; (no extra steps for install/uninstall)
 * No closed source components and licensed in Apache 2.0;
