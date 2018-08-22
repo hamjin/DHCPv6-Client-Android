@@ -1,10 +1,13 @@
 package be.mygod.dhcpv6client
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.preference.PreferenceFragmentCompat
@@ -17,8 +20,14 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
         addPreferencesFromResource(R.xml.pref_main)
         batteryKiller = findPreference("service.batteryKiller") as SwitchPreference
         batteryKiller.setOnPreferenceChangeListener { _, _ ->
-            if (Build.VERSION.SDK_INT >= 23)
-                requireContext().startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+            if (Build.VERSION.SDK_INT < 23) return@setOnPreferenceChangeListener false
+            val context = requireContext()
+            startActivity(if (batteryKiller.isChecked && ContextCompat.checkSelfPermission(context,
+                            Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) ==
+                    PackageManager.PERMISSION_GRANTED)
+                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                        .setData("package:${context.packageName}".toUri())
+            else Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             false
         }
         findPreference("misc.source").setOnPreferenceClickListener {
@@ -34,7 +43,7 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
     override fun onResume() {
         super.onResume()
         val context = requireContext()
-        batteryKiller.isChecked = Build.VERSION.SDK_INT >= 23 &&
+        batteryKiller.isChecked = Build.VERSION.SDK_INT < 23 ||
                 context.getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(context.packageName) == false
     }
 }
