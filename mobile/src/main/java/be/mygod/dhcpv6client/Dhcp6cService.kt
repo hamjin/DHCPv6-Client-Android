@@ -1,6 +1,7 @@
 package be.mygod.dhcpv6client
 
-import android.app.Service
+import android.annotation.TargetApi
+import android.app.*
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
@@ -8,6 +9,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.util.StickyEvent1
@@ -21,8 +23,14 @@ class Dhcp6cService : Service() {
         var enabled: Boolean
             get() = BootReceiver.enabled
             set(value) {
-                if (value && !Dhcp6cService.running) app.startService(Intent(app, Dhcp6cService::class.java))
-                else if (!value && Dhcp6cService.running) app.stopService(Intent(app, Dhcp6cService::class.java))
+                val intent = Intent(app, Dhcp6cService::class.java)
+                if (value && !Dhcp6cService.running) {
+                    if (app.backgroundUnavailable) @TargetApi(26) {
+                        // this block can only be reached on API 26+
+                        app.startForegroundService(intent)
+                    } else app.startService(intent)
+                }
+                else if (!value && Dhcp6cService.running) app.stopService(intent)
                 if (value == BootReceiver.enabled) return
                 BootReceiver.enabled = value
                 enabledChanged(value)
@@ -74,6 +82,16 @@ class Dhcp6cService : Service() {
     override fun onBind(p0: Intent?) = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (app.backgroundUnavailable) @TargetApi(26) {
+            getSystemService<NotificationManager>()?.createNotificationChannel(
+                    NotificationChannel("service", Dhcp6cManager.DHCP6C, NotificationManager.IMPORTANCE_NONE).apply {
+                        lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
+                    })
+            startForeground(1, NotificationCompat.Builder(this, "service").run {
+                priority = NotificationCompat.PRIORITY_LOW
+                build()
+            })
+        }
         if (!callback.registered) {
             connectivity.allNetworks.forEach {
                 callback.working[it] = connectivity.getLinkProperties(it)?.interfaceName ?: return@forEach

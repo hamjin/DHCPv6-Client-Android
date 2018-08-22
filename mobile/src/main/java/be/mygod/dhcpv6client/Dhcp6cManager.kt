@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 object Dhcp6cManager {
-    private const val DHCP6C = "libdhcp6c.so"
+    const val DHCP6C = "libdhcp6c.so"
     private const val DHCP6CTL = "libdhcp6ctl.so"
 
     private val addAddressParser = "ifaddrconf: add an address .+ on (.+)\$".toRegex()
