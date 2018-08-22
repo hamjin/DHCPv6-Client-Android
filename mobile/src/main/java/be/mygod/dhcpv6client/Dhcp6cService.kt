@@ -8,10 +8,10 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.core.content.getSystemService
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.util.StickyEvent1
+import be.mygod.dhcpv6client.widget.SmartSnackbar
 import com.crashlytics.android.Crashlytics
 import java.io.IOException
 
@@ -50,7 +50,7 @@ class Dhcp6cService : Service() {
                     // try to reboot service
                     Dhcp6cManager.stopDaemonForcibly()
                     Dhcp6cManager.startDaemon(working.values)
-                } else Toast.makeText(this@Dhcp6cService, e.message, Toast.LENGTH_LONG).show()
+                } else SmartSnackbar.make(e.localizedMessage).show()
             }
         }
 
@@ -84,7 +84,7 @@ class Dhcp6cService : Service() {
                 connectivity.registerNetworkCallback(request, callback)
                 callback.registered = true
             } catch (e: IOException) {
-                Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
+                SmartSnackbar.make(e.localizedMessage).show()
                 Crashlytics.logException(e)
                 e.printStackTrace()
                 stopSelf(startId)

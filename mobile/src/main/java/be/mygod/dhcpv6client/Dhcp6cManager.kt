@@ -2,12 +2,12 @@ package be.mygod.dhcpv6client
 
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.room.Database
 import be.mygod.dhcpv6client.room.InterfaceStatement
 import be.mygod.dhcpv6client.util.Event1
 import be.mygod.dhcpv6client.util.thread
+import be.mygod.dhcpv6client.widget.SmartSnackbar
 import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.io.IOException
@@ -90,7 +90,7 @@ id-assoc na %num { };""")) != -1L
             val eval = process.exitValue()
             if (eval != 0 && eval != 143) {
                 val msg = "$DHCP6C exited with $eval"
-                app.handler.post { Toast.makeText(app, msg, Toast.LENGTH_LONG).show() }
+                SmartSnackbar.make(msg).show()
                 Crashlytics.log(Log.ERROR, DHCP6C, msg)
                 Crashlytics.logException(NativeProcessError(msg))
             }
