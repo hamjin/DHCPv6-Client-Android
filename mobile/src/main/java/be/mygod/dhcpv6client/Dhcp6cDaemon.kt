@@ -16,7 +16,7 @@ class Dhcp6cDaemon(interfaces: String) {
     }
     private object Success : IOException()
 
-    private val process = ProcessBuilder("su", "-c", "echo Success && " +
+    private val process = ProcessBuilder("su", "-c", "echo Success && exec " +
             File(app.applicationInfo.nativeLibraryDir, Dhcp6cManager.DHCP6C).absolutePath +
             " -Df -p ${Dhcp6cManager.pidFile.absolutePath} $interfaces")    // TODO log level configurable?
             .directory(Dhcp6cManager.root)
