@@ -53,10 +53,10 @@ class Dhcp6cService : Service() {
                Dhcp6cManager.startInterface(ifname)
             } catch (e: IOException) {
                 e.printStackTrace()
-                Crashlytics.logException(e)
                 if (e.message?.contains("connect: Connection refused") == true) {
                     Dhcp6cManager.forceRestartDaemon(working.values)
                 } else SmartSnackbar.make(e.localizedMessage).show()
+                Crashlytics.logException(e)
             }
         }
 
