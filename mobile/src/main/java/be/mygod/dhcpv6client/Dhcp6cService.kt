@@ -61,7 +61,7 @@ class Dhcp6cService : Service() {
         }
 
         override fun onLost(network: Network?) {
-            working.remove(network ?: return)
+            Dhcp6cManager.stopInterface(working.remove(network ?: return) ?: return)
         }
 
         fun onDhcpv6Configured(iface: String) {
@@ -91,11 +91,7 @@ class Dhcp6cService : Service() {
             })
         }
         if (!callback.registered) {
-            connectivity.allNetworks.forEach {
-                callback.working[it] = connectivity.getLinkProperties(it)?.interfaceName ?: return@forEach
-            }
             try {
-                Dhcp6cManager.startDaemon(callback.working.values)
                 Dhcp6cManager.dhcpv6Configured[this] = callback::onDhcpv6Configured
                 connectivity.registerNetworkCallback(request, callback)
                 callback.registered = true

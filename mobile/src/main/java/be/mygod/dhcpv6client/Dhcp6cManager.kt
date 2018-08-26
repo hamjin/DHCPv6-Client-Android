@@ -1,5 +1,6 @@
 package be.mygod.dhcpv6client
 
+import android.os.FileObserver
 import android.util.Log
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.room.Database
@@ -8,12 +9,14 @@ import be.mygod.dhcpv6client.util.Event1
 import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 object Dhcp6cManager {
     const val DHCP6C = "libdhcp6c.so"
     private const val DHCP6CTL = "libdhcp6ctl.so"
+    private const val DHCP6C_PID = "dhcp6c.pid"
 
     private val lock = ReentrantLock()
     val dhcpv6Configured = Event1<String>()
@@ -21,17 +24,10 @@ object Dhcp6cManager {
     class NativeProcessError(message: String?) : IOException(message)
 
     val root = app.deviceStorage.noBackupFilesDir
-    val pidFile = File(root, "dhcp6c.pid")
+    val pidFile = File(root, DHCP6C_PID)
     private val config = File(root, "dhcp6c.conf")
 
     private var daemon: Dhcp6cDaemon? = null
-
-    private fun updateConfig() = lock.withLock {
-        config.writeText(Database.interfaceStatementDao.list().mapIndexed { i, statement ->
-            statement.statements = statement.statements.replace("%num", i.toString())
-            statement
-        }.joinToString("\n"))
-    }
 
     private fun ensureStatements(interfaces: Iterable<String>) = interfaces.map {
         // TODO: configurable default interface statement
@@ -45,11 +41,9 @@ id-assoc na %num { };""")) != -1L
 
     @Throws(IOException::class)
     private fun startDaemonLocked(interfaces: Iterable<String>) {
-        val allInterfaces = Database.interfaceStatementDao.list().map { it.iface }.toSet() + interfaces
-        if (ensureStatements(interfaces)) updateConfig()
         check(daemon == null)
-        Crashlytics.log(Log.DEBUG, DHCP6C, "Starting ${allInterfaces.joinToString()}...")
-        val newDaemon = Dhcp6cDaemon(allInterfaces.joinToString(" "))
+        Crashlytics.log(Log.DEBUG, DHCP6C, "Starting ${interfaces.joinToString()}...")
+        val newDaemon = Dhcp6cDaemon(interfaces.joinToString(" "))
         daemon = newDaemon
         newDaemon.startWatching {
             lock.withLock {
@@ -57,7 +51,6 @@ id-assoc na %num { };""")) != -1L
             }
         }
     }
-    fun startDaemon(interfaces: Iterable<String>) = lock.withLock { startDaemonLocked(interfaces) }
 
     @Throws(IOException::class)
     private fun sendControlCommand(vararg commands: String) {
@@ -77,8 +70,11 @@ id-assoc na %num { };""")) != -1L
      * This command specifies the process to reload the configuration
      * file.  Existing bindings, if any, are intact.
      */
-    fun reloadConfig() {
-        updateConfig()
+    private fun reloadConfigLocked() {
+        config.writeText(Database.interfaceStatementDao.list().mapIndexed { i, statement ->
+            statement.statements = statement.statements.replace("%num", i.toString())
+            statement
+        }.joinToString("\n"))
         if (daemon != null) sendControlCommand("reload")
     }
 
@@ -91,21 +87,13 @@ id-assoc na %num { };""")) != -1L
     fun startInterface(iface: String) {
         val updated = ensureStatements(listOf(iface))
         lock.withLock {
-            when {
-                updated -> {
-                    stopDaemonSync()    // there's no way to load new interfaces afaic
-                    updateConfig()
-                    startDaemonLocked(listOf(iface))
-                }
-                daemon == null -> {     // there is still an inevitable race condition here :|
-                    stopDaemon()        // kill existing daemons if any
-                    updateConfig()
-                    startDaemonLocked(listOf(iface))
-                }
-                else -> {
-                    Crashlytics.log(Log.DEBUG, DHCP6CTL, "Requesting $iface...")
-                    sendControlCommand("start", "interface", iface)
-                }
+            if (updated) reloadConfigLocked()
+            if (daemon == null) {   // there is still an inevitable race condition here :|
+                stopDaemon()        // kill existing daemons if any
+                startDaemonLocked(listOf(iface))
+            } else {
+                Crashlytics.log(Log.DEBUG, DHCP6CTL, "Requesting $iface...")
+                sendControlCommand("start", "interface", iface)
             }
         }
     }
@@ -124,11 +112,23 @@ id-assoc na %num { };""")) != -1L
      * This command stops the specified process.  If the process is a
      * client, it will release all configuration information (if any)
      * and exits.
+     *
+     * This method also syncs but not as good as stopDaemonSync.
      */
-    private fun stopDaemon() = try {
+    private fun stopDaemon() {
+        if (!pidFile.isFile) return
+        val barrier = ArrayBlockingQueue<Unit>(1)
+        // we don't have read access to pid file so we have to observe its parent directory
+        val observer = object : FileObserver(root.absolutePath, FileObserver.DELETE) {
+            override fun onEvent(event: Int, path: String?) {
+                if (event == FileObserver.DELETE && path == DHCP6C_PID) barrier.put(Unit)
+                stopWatching()
+            }
+        }
+        observer.startWatching()
+        if (!pidFile.isFile) return
         sendControlCommand("stop")
-    } catch (e: IOException) {
-        Crashlytics.log(Log.INFO, DHCP6C, e.message)
+        barrier.take()
     }
 
     fun stopDaemonSync() {
