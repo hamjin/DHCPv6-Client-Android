@@ -1,17 +1,13 @@
 package be.mygod.dhcpv6client
 
-import android.os.Build
 import android.util.Log
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.room.Database
 import be.mygod.dhcpv6client.room.InterfaceStatement
 import be.mygod.dhcpv6client.util.Event1
-import be.mygod.dhcpv6client.util.thread
-import be.mygod.dhcpv6client.widget.SmartSnackbar
 import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -19,18 +15,16 @@ object Dhcp6cManager {
     const val DHCP6C = "libdhcp6c.so"
     private const val DHCP6CTL = "libdhcp6ctl.so"
 
-    private val addAddressParser = "ifaddrconf: add an address .+ on (.+)\$".toRegex()
     private val lock = ReentrantLock()
     val dhcpv6Configured = Event1<String>()
 
     class NativeProcessError(message: String?) : IOException(message)
 
-    private val root = app.deviceStorage.noBackupFilesDir
-    private val pidFile = File(root, "dhcp6c.pid")
+    val root = app.deviceStorage.noBackupFilesDir
+    val pidFile = File(root, "dhcp6c.pid")
     private val config = File(root, "dhcp6c.conf")
 
-    private var daemon: Process? = null
-    private var daemonDaemon: Thread? = null
+    private var daemon: Dhcp6cDaemon? = null
 
     private fun updateConfig() = lock.withLock {
         config.writeText(Database.interfaceStatementDao.list().mapIndexed { i, statement ->
@@ -49,60 +43,19 @@ object Dhcp6cManager {
 id-assoc na %num { };""")) != -1L
     }.any { it }
 
-    private object Success : IOException()
     @Throws(IOException::class)
     private fun startDaemonLocked(interfaces: Iterable<String>) {
         val allInterfaces = Database.interfaceStatementDao.list().map { it.iface }.toSet() + interfaces
         if (ensureStatements(interfaces)) updateConfig()
         check(daemon == null)
         Crashlytics.log(Log.DEBUG, DHCP6C, "Starting ${allInterfaces.joinToString()}...")
-        val process = ProcessBuilder("su", "-c", "echo Success && " +
-                File(app.applicationInfo.nativeLibraryDir, DHCP6C).absolutePath +
-                " -Df -p ${pidFile.absolutePath} " + allInterfaces.joinToString(" "))  // TODO log level configurable?
-                .directory(root)
-                .redirectErrorStream(true)
-                .start()!!
-        daemon = process
-        val excQueue = ArrayBlockingQueue<IOException>(1)   // ArrayBlockingQueue doesn't want null
-        daemonDaemon = thread(DHCP6C) {
-            var pushed = false
-            fun pushException(ioException: IOException) = if (pushed) {
-                ioException.printStackTrace()
-                Crashlytics.logException(ioException)
-            } else {
-                excQueue.put(ioException)
-                pushed = true
-            }
-            try {
-                val reader = process.inputStream.bufferedReader()
-                val first = reader.readLine()
-                if (first != "Success") throw IOException("$first\n${reader.use { it.readText() }}")
-                pushException(Success)
-                reader.forEachLine {
-                    Crashlytics.log(Log.INFO, DHCP6C, it)
-                    val match = addAddressParser.find(it) ?: return@forEachLine
-                    dhcpv6Configured(match.groupValues[1])
-                }
-            } catch (e: IOException) {
-                pushException(e)
-            }
-            process.waitFor()
-            val eval = process.exitValue()
-            if (eval != 0 && eval != 143) {
-                val msg = "$DHCP6C exited with $eval"
-                SmartSnackbar.make(msg).show()
-                Crashlytics.log(Log.ERROR, DHCP6C, msg)
-                Crashlytics.logException(NativeProcessError(msg))
-            }
+        val newDaemon = Dhcp6cDaemon(allInterfaces.joinToString(" "))
+        daemon = newDaemon
+        newDaemon.startWatching {
             lock.withLock {
-                check(daemon == process)
-                daemon = null
-                daemonDaemon = null
+                if (daemon == this) daemon = null
             }
         }
-        val exc = excQueue.take()
-        if (exc !== Success) throw exc
-        Thread.sleep(100)   // HACK: wait for dhcp6c to spin up so that we can issue it commands
     }
     fun startDaemon(interfaces: Iterable<String>) = lock.withLock { startDaemonLocked(interfaces) }
 
@@ -179,17 +132,16 @@ id-assoc na %num { };""")) != -1L
     }
 
     fun stopDaemonSync() {
-        if (daemon == null) return
-        stopDaemon()
-        val relock = lock.isHeldByCurrentThread
-        if (relock) lock.unlock()
-        daemonDaemon?.join()
-        if (relock) lock.lock()
-        check(daemon == null)
+        daemon?.apply {
+            stopDaemon()
+            waitFor()
+        }
+        daemon = null
     }
 
-    fun stopDaemonForcibly() {
-        val daemon = daemon ?: return
-        if (Build.VERSION.SDK_INT >= 26) daemon.destroyForcibly() else daemon.destroy()
+    fun forceRestartDaemon(interfaces: Iterable<String>) = lock.withLock {
+        daemon?.destroy()
+        daemon = null
+        startDaemonLocked(interfaces)
     }
 }
