@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <SwitchPreference
-        android:key="service.batteryKiller"
+        android:key="service.backgroundRestriction"
         android:icon="@drawable/ic_device_battery_alert"
         android:title="@string/settings_service_battery_killer"
         android:summaryOff="@string/settings_service_battery_killer_summary_off"

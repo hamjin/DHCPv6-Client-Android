@@ -1,10 +1,9 @@
 <resources>
     <string name="app_name">DHCPv6 Client</string>
-    <string name="settings_service_battery_killer">Android system battery optimization</string>
-    <string name="settings_service_battery_killer_summary_off">Not optimized</string>
-    <string name="settings_service_battery_killer_summary_on">Optimizing battery use, no need to change this</string>
-    <string name="settings_service_battery_killer_summary_on_attention">Android system will kill the service after being
-        left in background for one minute, and service will not start on boot</string>
+    <string name="settings_service_battery_killer">Background restriction</string>
+    <string name="settings_service_battery_killer_summary_off">Service can run in the background</string>
+    <string name="settings_service_battery_killer_summary_on">Android system will kill the service after being left in
+        background for one minute, and service will not start on boot</string>
     <string name="settings_misc_source">View on GitHub</string>
     <string name="settings_misc_source_summary">View open source licenses, star, submit issues and contribute</string>
     <string name="settings_misc_donate">Donate</string>
