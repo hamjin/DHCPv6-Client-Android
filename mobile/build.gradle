@@ -87,7 +87,7 @@ dependencies {
     implementation "androidx.preference:preference:$androidxVersion"
     implementation "androidx.room:room-runtime:$roomVersion"
     implementation 'com.android.billingclient:billing:1.1'
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.4'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.5'
     implementation "com.google.android.material:material:$androidxVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
     kapt "androidx.room:room-compiler:$roomVersion"
