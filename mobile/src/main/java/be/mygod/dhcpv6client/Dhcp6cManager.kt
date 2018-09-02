@@ -106,7 +106,12 @@ id-assoc na %num { };""")) != -1L
      * interface.  The configuration process can later be restarted by
      * the start command.
      */
-    fun stopInterface(iface: String) = sendControlCommand("stop", "interface", iface)
+    fun stopInterface(iface: String) = try {
+        sendControlCommand("stop", "interface", iface)
+    } catch (e: NativeProcessError) {
+        e.printStackTrace()
+        Crashlytics.logException(e)
+    }
 
     /**
      * This command stops the specified process.  If the process is a
