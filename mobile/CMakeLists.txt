@@ -3,10 +3,6 @@ cmake_minimum_required(VERSION 3.4.1)
 set(ROOT src/main/cpp/wide-dhcpv6)
 
 add_executable( libdhcp6c.so
-                #src/main/cpp/android-ifaddrs/ifaddrs.c
-                #${ROOT}/missing/getifaddrs.c
-                #src/main/cpp/ifaddrs-android.cc
-                #src/main/cpp/dhcpcd/ifaddrs.c
                 src/main/cpp/ifaddrs.cpp
                 ${ROOT}/addrconf.c
                 ${ROOT}/auth.c

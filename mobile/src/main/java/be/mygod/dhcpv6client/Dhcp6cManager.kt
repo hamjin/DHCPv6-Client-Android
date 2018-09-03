@@ -6,8 +6,12 @@ import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.room.Database
 import be.mygod.dhcpv6client.room.InterfaceStatement
 import com.crashlytics.android.Crashlytics
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.io.File
 import java.io.IOException
+import java.nio.ByteBuffer
+import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -24,6 +28,39 @@ object Dhcp6cManager {
     val root = app.deviceStorage.noBackupFilesDir
     val pidFile = File(root, DHCP6C_PID)
     private val config = File(root, "dhcp6c.conf")
+    private val duidFile = File(root, "dhcp6c-duid")
+
+    var duid: ByteArray
+        get() = DataInputStream(duidFile.inputStream()).use {
+            // stupid DataInputStream uses big-endian
+            ByteArray(it.readUnsignedByte() + 256 * it.readUnsignedByte()).apply { it.readFully(this) }
+        }
+        set(value) = DataOutputStream(duidFile.outputStream()).use {
+            check(value.size <= 65535)
+            it.writeByte(value.size)
+            it.writeByte(value.size ushr 8)
+            it.write(value)
+        }
+    var duidString: String
+        get() = duid.joinToString(":") { "%02x".format(it) }
+        set(value) { duid = value.split(':').map { Integer.parseInt(it, 16).toByte() }.toByteArray() }
+
+    /**
+     * Generates a type-1 DUID. See doc: https://tools.ietf.org/html/rfc3315#section-9
+     */
+    fun generateDuid() {
+        duid = ByteBuffer.allocate(14).run {
+            putShort(1)                                                     // type = 1
+            putShort(1)                                                     // hardware type = ARPHRD_ETHER
+            putInt((System.currentTimeMillis() / 1000 - 946684800).toInt()) // time is since 1/1/2000 UTC, modulo 2^32
+            put(ByteArray(6).apply { Random().nextBytes(this) })            // link-layer address
+            array()
+        }
+    }
+    fun ensureDuid() {
+        if (!duidFile.isFile) generateDuid()
+        check(duidFile.isFile)
+    }
 
     private var daemon: Dhcp6cDaemon? = null
 
@@ -40,6 +77,7 @@ id-assoc na %num { };""")) != -1L
     @Throws(IOException::class)
     private fun startDaemonLocked(interfaces: Iterable<String>) {
         check(daemon == null)
+        ensureDuid()
         Crashlytics.log(Log.DEBUG, DHCP6C, "Starting ${interfaces.joinToString()}...")
         val newDaemon = Dhcp6cDaemon(interfaces.joinToString(" "))
         daemon = newDaemon

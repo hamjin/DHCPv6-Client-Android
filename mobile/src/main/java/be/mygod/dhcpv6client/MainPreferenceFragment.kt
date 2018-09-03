@@ -11,14 +11,19 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
-import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.EditTextPreference
+import androidx.preference.Preference
 import androidx.preference.SwitchPreference
 import be.mygod.dhcpv6client.App.Companion.app
+import be.mygod.dhcpv6client.widget.SmartSnackbar
+import com.crashlytics.android.Crashlytics
+import com.takisoft.preferencex.PreferenceFragmentCompat
 
 class MainPreferenceFragment : PreferenceFragmentCompat() {
     private lateinit var backgroundRestriction: SwitchPreference
+    private lateinit var duid: EditTextPreference
 
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+    override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.pref_main)
         backgroundRestriction = findPreference("service.backgroundRestriction") as SwitchPreference
         backgroundRestriction.setOnPreferenceChangeListener { _, _ ->
@@ -31,6 +36,20 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
                         .setData("package:${context.packageName}".toUri())
             else Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             false
+        }
+        duid = findPreference("service.duid") as EditTextPreference
+        Dhcp6cManager.ensureDuid()
+        duid.setOnPreferenceChangeListener { _, newValue ->
+            try {
+                Dhcp6cManager.duidString = newValue as String
+                SmartSnackbar.make(R.string.settings_service_duid_success).show()
+                true
+            } catch (e: Exception) {
+                SmartSnackbar.make(e.localizedMessage).show()
+                Crashlytics.logException(e)
+                e.printStackTrace()
+                false
+            }
         }
         findPreference("misc.source").setOnPreferenceClickListener {
             (activity as MainActivity).launchUrl("https://github.com/Mygod/DHCPv6-Client-Android".toUri())
@@ -47,5 +66,11 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
         val context = requireContext()
         backgroundRestriction.isChecked = Build.VERSION.SDK_INT >= 26 && !app.backgroundUnavailable &&
                 context.getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(context.packageName) == false
+        duid.text = Dhcp6cManager.duidString
+    }
+
+    override fun onDisplayPreferenceDialog(preference: Preference?) {
+        if (preference === duid) displayPreferenceDialog(DuidPreferenceDialogFragment(), duid.key)
+        else super.onDisplayPreferenceDialog(preference)
     }
 }

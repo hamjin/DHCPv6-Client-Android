@@ -4,6 +4,8 @@
     <string name="settings_service_battery_killer_summary_off">Service can run in the background</string>
     <string name="settings_service_battery_killer_summary_on">Android system will kill the service after being left in
         background for one minute, and service will not start on boot</string>
+    <string name="settings_service_duid_generate">Generate</string>
+    <string name="settings_service_duid_success">Restart service to apply changes</string>
     <string name="settings_misc_source">View on GitHub</string>
     <string name="settings_misc_source_summary">View open source licenses, star, submit issues and contribute</string>
     <string name="settings_misc_donate">Donate</string>
