@@ -19,7 +19,6 @@ object Dhcp6cManager {
     private const val DHCP6C_PID = "dhcp6c.pid"
 
     private val lock = ReentrantLock()
-    val dhcpv6Configured = Event1<String>()
 
     class NativeProcessError(message: String?) : IOException(message)
 

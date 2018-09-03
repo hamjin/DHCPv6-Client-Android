@@ -3,10 +3,7 @@ package be.mygod.dhcpv6client
 import android.annotation.TargetApi
 import android.app.*
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
+import android.net.*
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -45,30 +42,31 @@ class Dhcp6cService : Service() {
 
     private val callback = object : ConnectivityManager.NetworkCallback() {
         var registered = false
-        val working = HashMap<Network, String>()
+        val working = HashMap<Network, LinkProperties>()
 
-        override fun onAvailable(network: Network) {
-            val ifname = connectivity.getLinkProperties(network)?.interfaceName ?: return
-            if (working.put(network, ifname) == null) try { // prevent re-requesting the same interface
-               Dhcp6cManager.startInterface(ifname)
+        private fun <T> List<T>.isSameAs(other: List<T>) = size == other.size && zip(other).all { (a, b) -> a == b }
+
+        override fun onLinkPropertiesChanged(network: Network, link: LinkProperties?) {
+            val ifname = link?.interfaceName ?: return
+            val oldLink = working.put(network, link)
+            if (oldLink == null) try { // prevent re-requesting the same interface
+                Dhcp6cManager.startInterface(ifname)
             } catch (e: IOException) {
                 e.printStackTrace()
                 if (e.message?.contains("connect: Connection refused") == true) {
-                    Dhcp6cManager.forceRestartDaemon(working.values)
+                    Dhcp6cManager.forceRestartDaemon(working.values.map { it.interfaceName })
                 } else SmartSnackbar.make(e.localizedMessage).show()
                 Crashlytics.logException(e)
+            } else if (!link.linkAddresses.isSameAs(oldLink.linkAddresses)) {
+                // update connectivity on linkAddresses change
+                Crashlytics.log(Log.INFO, "Dhcp6cService", "Reporting connectivity on network $network ($link)")
+                if (Build.VERSION.SDK_INT >= 23) connectivity.reportNetworkConnectivity(network, true)
+                else @Suppress("DEPRECATION") connectivity.reportBadNetwork(network)
             }
         }
 
         override fun onLost(network: Network?) {
-            Dhcp6cManager.stopInterface(working.remove(network ?: return) ?: return)
-        }
-
-        fun onDhcpv6Configured(iface: String) {
-            val network = working.entries.singleOrNull { (_, ifname) -> iface == ifname } ?: return
-            Crashlytics.log(Log.INFO, "Dhcp6cService", "Reporting connectivity on network $network ($iface)")
-            if (Build.VERSION.SDK_INT >= 23) connectivity.reportNetworkConnectivity(network.key, true)
-            else @Suppress("DEPRECATION") connectivity.reportBadNetwork(network.key)
+            Dhcp6cManager.stopInterface(working.remove(network ?: return)?.interfaceName ?: return)
         }
     }
 
@@ -92,7 +90,6 @@ class Dhcp6cService : Service() {
         }
         if (!callback.registered) {
             try {
-                Dhcp6cManager.dhcpv6Configured[this] = callback::onDhcpv6Configured
                 connectivity.registerNetworkCallback(request, callback)
                 callback.registered = true
             } catch (e: IOException) {
@@ -108,7 +105,6 @@ class Dhcp6cService : Service() {
 
     override fun onDestroy() {
         if (callback.registered) {
-            Dhcp6cManager.dhcpv6Configured -= this
             connectivity.unregisterNetworkCallback(callback)
             callback.working.clear()
             callback.registered = false

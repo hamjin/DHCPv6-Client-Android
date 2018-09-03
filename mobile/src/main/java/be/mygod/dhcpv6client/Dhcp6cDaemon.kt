@@ -11,9 +11,6 @@ import java.io.IOException
 import java.util.concurrent.ArrayBlockingQueue
 
 class Dhcp6cDaemon(interfaces: String) {
-    companion object {
-        private val addAddressParser = "ifaddrconf: add an address .+ on (.+)\$".toRegex()
-    }
     private object Success : IOException()
 
     private val process = ProcessBuilder("su", "-c", "echo Success && exec " +
@@ -42,8 +39,6 @@ class Dhcp6cDaemon(interfaces: String) {
                 pushException(Success)
                 reader.forEachLine {
                     Crashlytics.log(Log.INFO, Dhcp6cManager.DHCP6C, it)
-                    val match = addAddressParser.find(it) ?: return@forEachLine
-                    Dhcp6cManager.dhcpv6Configured(match.groupValues[1])
                 }
             } catch (e: IOException) {
                 pushException(e)
