@@ -8,6 +8,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
+import androidx.core.os.postDelayed
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.util.StickyEvent1
 import be.mygod.dhcpv6client.widget.SmartSnackbar
@@ -43,6 +44,18 @@ class Dhcp6cService : Service() {
     private val callback = object : ConnectivityManager.NetworkCallback() {
         var registered = false
         val working = HashMap<Network, LinkProperties>()
+        val reporting = HashMap<Network, Long>()
+
+        @TargetApi(23)
+        private fun reportPeriodically(network: Network) {
+            val delay = reporting[network] ?: return
+            connectivity.reportNetworkConnectivity(network, true)
+            Crashlytics.log(Log.INFO, "Dhcp6cService", "Requesting reprobe for $network (retry in $delay ms)")
+            if (delay < 5 * 60 * 1000) {   // if 10 mins have passed, give up
+                reporting[network] = delay * 2
+                app.handler.postDelayed(delay, network) { reportPeriodically(network) }
+            } else reporting.remove(network)
+        }
 
         private fun <T> List<T>.isSameAs(other: List<T>) = size == other.size && zip(other).all { (a, b) -> a == b }
 
@@ -59,14 +72,25 @@ class Dhcp6cService : Service() {
                 Crashlytics.logException(e)
             } else if (!link.linkAddresses.isSameAs(oldLink.linkAddresses)) {
                 // update connectivity on linkAddresses change
-                Crashlytics.log(Log.INFO, "Dhcp6cService", "Reporting connectivity on network $network ($link)")
-                if (Build.VERSION.SDK_INT >= 23) connectivity.reportNetworkConnectivity(network, true)
-                else @Suppress("DEPRECATION") connectivity.reportBadNetwork(network)
+                if (Build.VERSION.SDK_INT < 23) @Suppress("DEPRECATION") connectivity.reportBadNetwork(network)
+                else if (!connectivity.getNetworkCapabilities(network).hasCapability(
+                                NetworkCapabilities.NET_CAPABILITY_VALIDATED) && !reporting.containsKey(network)) {
+                    reporting[network] = 2000
+                    reportPeriodically(network)
+                }
             }
+        }
+
+        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+            if ((Build.VERSION.SDK_INT < 23 ||
+                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) &&
+                    reporting.remove(network) != null) app.handler.removeCallbacksAndMessages(network)
         }
 
         override fun onLost(network: Network?) {
             Dhcp6cManager.stopInterface(working.remove(network ?: return)?.interfaceName ?: return)
+            app.handler.removeCallbacksAndMessages(network)
+            reporting.remove(network)
         }
     }
 
