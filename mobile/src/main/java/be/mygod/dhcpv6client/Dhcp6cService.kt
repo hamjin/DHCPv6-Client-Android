@@ -17,6 +17,7 @@ import java.io.IOException
 
 class Dhcp6cService : Service() {
     companion object {
+        private const val TAG = "Dhcp6cService"
         var running = false
         var enabled: Boolean
             get() = BootReceiver.enabled
@@ -50,14 +51,12 @@ class Dhcp6cService : Service() {
         private fun reportPeriodically(network: Network) {
             val delay = reporting[network] ?: return
             connectivity.reportNetworkConnectivity(network, true)
-            Crashlytics.log(Log.INFO, "Dhcp6cService", "Requesting reprobe for $network (retry in $delay ms)")
+            Crashlytics.log(Log.INFO, TAG, "Requesting reprobe for $network (retry in $delay ms)")
             if (delay < 5 * 60 * 1000) {   // if 10 mins have passed, give up
                 reporting[network] = delay * 2
                 app.handler.postDelayed(delay, network) { reportPeriodically(network) }
             } else reporting.remove(network)
         }
-
-        private fun <T> List<T>.isSameAs(other: List<T>) = size == other.size && zip(other).all { (a, b) -> a == b }
 
         override fun onLinkPropertiesChanged(network: Network, link: LinkProperties?) {
             val ifname = link?.interfaceName ?: return
@@ -70,7 +69,8 @@ class Dhcp6cService : Service() {
                     Dhcp6cManager.forceRestartDaemon(working.values.map { it.interfaceName })
                 } else SmartSnackbar.make(e.localizedMessage).show()
                 Crashlytics.logException(e)
-            } else if (!link.linkAddresses.isSameAs(oldLink.linkAddresses)) {
+            } else if (link.linkAddresses.size > oldLink.linkAddresses.size) {
+                Log.d(TAG, "Link addresses updated for $network: $oldLink => $link")
                 // update connectivity on linkAddresses change
                 if (Build.VERSION.SDK_INT < 23) @Suppress("DEPRECATION") connectivity.reportBadNetwork(network)
                 else if (!connectivity.getNetworkCapabilities(network).hasCapability(
