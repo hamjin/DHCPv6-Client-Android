@@ -5,7 +5,6 @@ import android.util.Log
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.room.Database
 import be.mygod.dhcpv6client.room.InterfaceStatement
-import be.mygod.dhcpv6client.util.Event1
 import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.io.IOException

@@ -65,8 +65,11 @@ class Dhcp6cService : Service() {
                 Dhcp6cManager.startInterface(ifname)
             } catch (e: IOException) {
                 e.printStackTrace()
-                if (e.message?.contains("connect: Connection refused") == true) {
+                if (e.message?.contains("connect: Connection refused") == true) try {
                     Dhcp6cManager.forceRestartDaemon(working.values.map { it.interfaceName })
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    Crashlytics.logException(e)
                 } else SmartSnackbar.make(e.localizedMessage).show()
                 Crashlytics.logException(e)
             } else if (link.linkAddresses.size > oldLink.linkAddresses.size) {
@@ -133,7 +136,12 @@ class Dhcp6cService : Service() {
             callback.working.clear()
             callback.registered = false
         }
-        Dhcp6cManager.stopDaemonSync()
+        try {
+            Dhcp6cManager.stopDaemonSync()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Crashlytics.logException(e)
+        }
         running = false
         super.onDestroy()
     }

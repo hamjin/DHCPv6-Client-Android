@@ -35,21 +35,21 @@ class Dhcp6cDaemon(interfaces: String) {
             try {
                 val reader = process.inputStream.bufferedReader()
                 val first = reader.readLine()
-                if (first != "Success") throw IOException("$first\n${reader.use { it.readText() }}")
+                if (first != "Success") throw IOException("$first\n${reader.use { it.readText() }}".trim())
                 pushException(Success)
                 reader.forEachLine {
                     Crashlytics.log(Log.INFO, Dhcp6cManager.DHCP6C, it)
                 }
+                process.waitFor()
+                val eval = process.exitValue()
+                if (eval != 0 && eval != 143) {
+                    val msg = "${Dhcp6cManager.DHCP6C} exited with $eval"
+                    SmartSnackbar.make(msg).show()
+                    Crashlytics.log(Log.ERROR, Dhcp6cManager.DHCP6C, msg)
+                    Crashlytics.logException(Dhcp6cManager.NativeProcessError(msg))
+                }
             } catch (e: IOException) {
                 pushException(e)
-            }
-            process.waitFor()
-            val eval = process.exitValue()
-            if (eval != 0 && eval != 143) {
-                val msg = "${Dhcp6cManager.DHCP6C} exited with $eval"
-                SmartSnackbar.make(msg).show()
-                Crashlytics.log(Log.ERROR, Dhcp6cManager.DHCP6C, msg)
-                Crashlytics.logException(Dhcp6cManager.NativeProcessError(msg))
             }
             onExit(this)
         }
