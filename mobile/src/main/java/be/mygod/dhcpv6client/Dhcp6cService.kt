@@ -76,7 +76,7 @@ class Dhcp6cService : Service() {
                 Log.d(TAG, "Link addresses updated for $network: $oldLink => $link")
                 // update connectivity on linkAddresses change
                 if (Build.VERSION.SDK_INT < 23) @Suppress("DEPRECATION") connectivity.reportBadNetwork(network)
-                else if (!connectivity.getNetworkCapabilities(network).hasCapability(
+                else if (true != connectivity.getNetworkCapabilities(network)?.hasCapability(
                                 NetworkCapabilities.NET_CAPABILITY_VALIDATED) && !reporting.containsKey(network)) {
                     reporting[network] = 2000
                     reportPeriodically(network)
