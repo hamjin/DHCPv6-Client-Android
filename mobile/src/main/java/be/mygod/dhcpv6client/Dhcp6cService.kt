@@ -65,13 +65,15 @@ class Dhcp6cService : Service() {
                 Dhcp6cManager.startInterface(ifname)
             } catch (e: IOException) {
                 e.printStackTrace()
-                if (e.message?.contains("connect: Connection refused") == true) try {
+                if (e.message?.contains("connect:") == true) try {
                     Dhcp6cManager.forceRestartDaemon(working.values.map { it.interfaceName })
                 } catch (e: IOException) {
                     e.printStackTrace()
                     Crashlytics.logException(e)
-                } else SmartSnackbar.make(e.localizedMessage).show()
-                Crashlytics.logException(e)
+                } else {
+                    SmartSnackbar.make(e.localizedMessage).show()
+                    Crashlytics.logException(e)
+                }
             } else if (link.linkAddresses.size > oldLink.linkAddresses.size) {
                 Log.d(TAG, "Link addresses updated for $network: $oldLink => $link")
                 // update connectivity on linkAddresses change
