@@ -86,8 +86,14 @@ id-assoc na %num { };""")) != -1L
         val updated = ensureStatements(listOf(iface))
         lock.withLock {
             if (updated) reloadConfigLocked()
-            if (daemon == null) {   // there is still an inevitable race condition here :|
-                stopDaemon()        // kill existing daemons if any
+            if (daemon == null) {       // there is still an inevitable race condition here :|
+                try {
+                    stopDaemon()        // kill existing daemons if any
+                } catch (e: NativeProcessError) {
+                    e.printStackTrace()
+                    Crashlytics.logException(e)
+                    Thread.sleep(1000)  // assume old process is dying or has died, either way wait a lil
+                }
                 startDaemonLocked(listOf(iface))
             } else {
                 Crashlytics.log(Log.DEBUG, DHCP6CTL, "Requesting $iface...")
