@@ -24,29 +24,25 @@ class Dhcp6cDaemon(interfaces: String) {
 
     fun startWatching(onExit: Dhcp6cDaemon.() -> Unit) {
         thread = thread(Dhcp6cManager.DHCP6C) {
-            var pushed = false
-            fun pushException(ioException: IOException) = if (pushed) {
+            var initializing = true
+            fun pushException(ioException: IOException) = if (initializing) {
+                excQueue.put(ioException)
+                initializing = false
+            } else {
                 ioException.printStackTrace()
                 Crashlytics.logException(ioException)
-            } else {
-                excQueue.put(ioException)
-                pushed = true
             }
             try {
-                val reader = process.inputStream.bufferedReader()
-                val first = reader.readLine()
-                if (first != "Success") throw IOException("$first\n${reader.use { it.readText() }}".trim())
-                pushException(Success)
-                reader.forEachLine {
-                    Crashlytics.log(Log.INFO, Dhcp6cManager.DHCP6C, it)
+                process.inputStream.bufferedReader().forEachLine {
+                    if (it == "Success" && initializing) pushException(Success)
+                    else Crashlytics.log(if (initializing) Log.ERROR else Log.INFO, Dhcp6cManager.DHCP6C, it)
                 }
                 process.waitFor()
                 val eval = process.exitValue()
-                if (eval != 0 && eval != 143) {
+                if (initializing || (eval != 0 && eval != 143)) {
                     val msg = "${Dhcp6cManager.DHCP6C} exited with $eval"
                     SmartSnackbar.make(msg).show()
-                    Crashlytics.log(Log.ERROR, Dhcp6cManager.DHCP6C, msg)
-                    Crashlytics.logException(Dhcp6cManager.NativeProcessError(msg))
+                    throw Dhcp6cManager.NativeProcessError(msg)
                 }
             } catch (e: IOException) {
                 pushException(e)
