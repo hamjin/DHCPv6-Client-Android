@@ -39,7 +39,7 @@ class Dhcp6cDaemon(interfaces: String) {
                 }
                 process.waitFor()
                 val eval = process.exitValue()
-                if (initializing || (eval != 0 && eval != 143)) {
+                if (initializing || eval != 0 && eval != 143) {
                     val msg = "${Dhcp6cManager.DHCP6C} exited with $eval"
                     SmartSnackbar.make(msg).show()
                     throw Dhcp6cManager.NativeProcessError(msg)
