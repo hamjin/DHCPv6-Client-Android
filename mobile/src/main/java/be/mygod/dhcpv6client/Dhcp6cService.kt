@@ -95,7 +95,7 @@ class Dhcp6cService : Service() {
         }
 
         override fun onLost(network: Network?) {
-            Dhcp6cManager.stopInterface(working.remove(network ?: return)?.interfaceName ?: return)
+            working.remove(network ?: return)
             app.handler.removeCallbacksAndMessages(network)
             reporting.remove(network)
         }
