@@ -10,6 +10,7 @@ import android.provider.Settings
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
+import androidx.fragment.app.DialogFragment
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
 import be.mygod.dhcpv6client.App.Companion.app
@@ -36,7 +37,7 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
             true
         }
         findPreference("misc.donate").setOnPreferenceClickListener {
-            EBegFragment().show(fragmentManager, "ebeg_fragment")
+            EBegFragment().apply { setStyle(DialogFragment.STYLE_NO_TITLE, 0) }.show(fragmentManager, "EBegFragment")
             true
         }
     }
