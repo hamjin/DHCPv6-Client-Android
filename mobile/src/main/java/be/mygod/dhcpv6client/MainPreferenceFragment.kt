@@ -1,6 +1,7 @@
 package be.mygod.dhcpv6client
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -29,12 +30,17 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
         backgroundRestriction.setOnPreferenceChangeListener { _, _ ->
             if (Build.VERSION.SDK_INT < 23) return@setOnPreferenceChangeListener false
             val context = requireContext()
-            startActivity(if (backgroundRestriction.isChecked && ContextCompat.checkSelfPermission(context,
-                            Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) ==
-                    PackageManager.PERMISSION_GRANTED)
-                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                        .setData("package:${context.packageName}".toUri())
-            else Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+            if (!backgroundRestriction.isChecked || ContextCompat.checkSelfPermission(context, Manifest.permission
+                            .REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) != PackageManager.PERMISSION_GRANTED) try {
+                startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+            } catch (e: ActivityNotFoundException) {
+                e.printStackTrace()
+                Crashlytics.logException(e)
+            } catch (e: SecurityException) {
+                e.printStackTrace()
+                Crashlytics.logException(e)
+            } else startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    .setData("package:${context.packageName}".toUri()))
             false
         }
         duid = findPreference("service.duid") as EditTextPreference
