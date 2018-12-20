@@ -13,10 +13,9 @@ import java.util.concurrent.ArrayBlockingQueue
 class Dhcp6cDaemon(interfaces: String) {
     private object Success : IOException()
 
-    private val process = ProcessBuilder("su", "-c", "echo Success && exec " +
-            File(app.applicationInfo.nativeLibraryDir, Dhcp6cManager.DHCP6C).absolutePath +
+    private val process = ProcessBuilder("su", "-c", "echo Success && cd " + Dhcp6cManager.root +
+            " && exec " + File(app.applicationInfo.nativeLibraryDir, Dhcp6cManager.DHCP6C).absolutePath +
             " -Df -p ${Dhcp6cManager.pidFile.absolutePath} $interfaces")    // TODO log level configurable?
-            .directory(Dhcp6cManager.root)
             .redirectErrorStream(true)
             .start()!!
     private val excQueue = ArrayBlockingQueue<IOException>(1)   // ArrayBlockingQueue doesn't want null
