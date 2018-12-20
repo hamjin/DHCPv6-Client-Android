@@ -129,7 +129,6 @@ id-assoc na %num { };""")) != -1L
                     stopDaemon()        // kill existing daemons if any
                 } catch (e: NativeProcessError) {
                     e.printStackTrace()
-                    Crashlytics.logException(e)
                     Thread.sleep(1000)  // assume old process is dying or has died, either way wait a lil
                 }
                 startDaemonLocked(listOf(iface))

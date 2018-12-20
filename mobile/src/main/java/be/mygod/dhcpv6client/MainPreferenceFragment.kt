@@ -52,7 +52,6 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
                 true
             } catch (e: Exception) {
                 SmartSnackbar.make(e.localizedMessage).show()
-                Crashlytics.logException(e)
                 e.printStackTrace()
                 false
             }
