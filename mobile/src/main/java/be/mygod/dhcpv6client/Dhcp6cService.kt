@@ -28,8 +28,7 @@ class Dhcp6cService : Service() {
                         // this block can only be reached on API 26+
                         app.startForegroundService(intent)
                     } else app.startService(intent)
-                }
-                else if (!value && Dhcp6cService.running) app.stopService(intent)
+                } else if (!value && Dhcp6cService.running) app.stopService(intent)
                 if (value == BootReceiver.enabled) return
                 BootReceiver.enabled = value
                 enabledChanged(value)

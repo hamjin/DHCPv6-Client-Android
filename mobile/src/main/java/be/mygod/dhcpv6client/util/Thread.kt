@@ -1,7 +1,5 @@
 package be.mygod.dhcpv6client.util
 
-import android.widget.Toast
-import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.widget.SmartSnackbar
 import com.crashlytics.android.Crashlytics
 
