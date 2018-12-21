@@ -44,7 +44,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        serviceSwitch.isChecked = Dhcp6cService.enabled
         Dhcp6cService.enabled = Dhcp6cService.enabled
     }
 

@@ -19,6 +19,7 @@ class Dhcp6cTileService : TileService() {
                 updateTile()
             }
         }
+        Dhcp6cService.enabled = Dhcp6cService.enabled
     }
 
     override fun onStopListening() {
