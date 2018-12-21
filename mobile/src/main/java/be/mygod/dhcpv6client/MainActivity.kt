@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
                 .setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .build()
     }
-    fun launchUrl(url: Uri) = try {
+    fun launchUrl(url: Uri) = if (packageManager.hasSystemFeature("android.hardware.faketouch")) try {
         customTabsIntent.launchUrl(this, url)
     } catch (e: ActivityNotFoundException) {
         e.printStackTrace()
@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         e.printStackTrace()
         Crashlytics.logException(e)
         SmartSnackbar.make(url.toString()).show()
-    }
+    } else SmartSnackbar.make(url.toString()).show()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
