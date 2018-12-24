@@ -59,7 +59,7 @@
         </receiver>
 
         <provider android:name="com.crashlytics.android.CrashlyticsInitProvider"
-                  tools:remove="node"/>
+                  tools:node="remove"/>
     </application>
 
 </manifest>
