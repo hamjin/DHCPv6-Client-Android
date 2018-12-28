@@ -21,14 +21,17 @@ import com.crashlytics.android.Crashlytics
 import com.takisoft.preferencex.PreferenceFragmentCompat
 
 class MainPreferenceFragment : PreferenceFragmentCompat() {
-    private lateinit var backgroundRestriction: SwitchPreference
+    private var backgroundRestriction: SwitchPreference? = null
     private lateinit var duid: EditTextPreference
 
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.pref_main)
-        backgroundRestriction = findPreference("service.backgroundRestriction") as SwitchPreference
-        backgroundRestriction.setOnPreferenceChangeListener { _, _ ->
-            if (Build.VERSION.SDK_INT < 23) return@setOnPreferenceChangeListener false
+        val backgroundRestriction = findPreference("service.backgroundRestriction") as SwitchPreference
+        this.backgroundRestriction = backgroundRestriction
+        if (Build.VERSION.SDK_INT < 23 || app.backgroundUnavailable) {
+            backgroundRestriction.parent!!.removePreference(backgroundRestriction)
+            this.backgroundRestriction = null
+        } else backgroundRestriction.setOnPreferenceChangeListener { _, _ ->
             val context = requireContext()
             if (!backgroundRestriction.isChecked || ContextCompat.checkSelfPermission(context, Manifest.permission
                             .REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) != PackageManager.PERMISSION_GRANTED) try {
@@ -68,9 +71,12 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
 
     override fun onResume() {
         super.onResume()
-        val context = requireContext()
-        backgroundRestriction.isChecked = Build.VERSION.SDK_INT >= 26 && !app.backgroundUnavailable &&
-                context.getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(context.packageName) == false
+        val backgroundRestriction = backgroundRestriction
+        if (backgroundRestriction != null) {
+            val context = requireContext()
+            backgroundRestriction.isChecked = Build.VERSION.SDK_INT >= 26 && context.getSystemService<PowerManager>()
+                    ?.isIgnoringBatteryOptimizations(context.packageName) == false
+        }
         duid.text = Dhcp6cManager.duidString
     }
 
