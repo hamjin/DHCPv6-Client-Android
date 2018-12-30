@@ -18,17 +18,13 @@ class MainActivity : AppCompatActivity() {
                 .setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .build()
     }
-    fun launchUrl(url: Uri) = if (packageManager.hasSystemFeature("android.hardware.faketouch")) try {
-        customTabsIntent.launchUrl(this, url)
-    } catch (e: ActivityNotFoundException) {
-        e.printStackTrace()
-        app.analytics.logEvent("launch_url", bundleOf(Pair("message", e.message)))
+    fun launchUrl(url: Uri) {
+        if (packageManager.hasSystemFeature("android.hardware.faketouch")) try {
+            customTabsIntent.launchUrl(this, url)
+            return
+        } catch (_: ActivityNotFoundException) { } catch (_: SecurityException) { }
         SmartSnackbar.make(url.toString()).show()
-    } catch (e: SecurityException) {
-        e.printStackTrace()
-        app.analytics.logEvent("launch_url", bundleOf(Pair("message", e.message)))
-        SmartSnackbar.make(url.toString()).show()
-    } else SmartSnackbar.make(url.toString()).show()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
