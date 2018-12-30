@@ -9,6 +9,7 @@ import android.provider.Settings
 import be.mygod.dhcpv6client.room.Database
 import be.mygod.dhcpv6client.util.DeviceStorageApp
 import com.crashlytics.android.Crashlytics
+import com.google.firebase.analytics.FirebaseAnalytics
 import io.fabric.sdk.android.Fabric
 
 class App : Application() {
@@ -29,6 +30,7 @@ class App : Application() {
 
     lateinit var deviceStorage: Application
     val handler = Handler()
+    val analytics by lazy { FirebaseAnalytics.getInstance(app.deviceStorage) }
     /**
      * Android TV or devices that can't opt out of Android system battery optimizations.
      */

@@ -1,6 +1,8 @@
 package be.mygod.dhcpv6client
 
 import android.os.Build
+import android.system.ErrnoException
+import android.system.OsConstants
 import android.util.Log
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.util.thread
@@ -8,6 +10,7 @@ import be.mygod.dhcpv6client.widget.SmartSnackbar
 import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.io.IOException
+import java.io.InterruptedIOException
 import java.util.concurrent.ArrayBlockingQueue
 
 class Dhcp6cDaemon(interfaces: String) {
@@ -24,12 +27,15 @@ class Dhcp6cDaemon(interfaces: String) {
     fun startWatching(onExit: Dhcp6cDaemon.() -> Unit) {
         thread = thread(Dhcp6cManager.DHCP6C) {
             var initializing = true
-            fun pushException(ioException: IOException) = if (initializing) {
-                excQueue.put(ioException)
-                initializing = false
-            } else {
-                ioException.printStackTrace()
-                Crashlytics.logException(ioException)
+            fun pushException(ioException: IOException) {
+                if (initializing) {
+                    excQueue.put(ioException)
+                    initializing = false
+                } else {
+                    ioException.printStackTrace()
+                    if (ioException !is InterruptedIOException && (ioException.cause as? ErrnoException)?.errno !=
+                            OsConstants.EBADF) Crashlytics.logException(ioException)
+                }
             }
             try {
                 process.inputStream.bufferedReader().forEachLine {

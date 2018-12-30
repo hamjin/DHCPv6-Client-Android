@@ -11,13 +11,13 @@ import android.provider.Settings
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.SwitchPreference
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.widget.SmartSnackbar
-import com.crashlytics.android.Crashlytics
 import com.takisoft.preferencex.PreferenceFragmentCompat
 
 class MainPreferenceFragment : PreferenceFragmentCompat() {
@@ -38,10 +38,10 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
                 startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             } catch (e: ActivityNotFoundException) {
                 e.printStackTrace()
-                Crashlytics.logException(e)
+                app.analytics.logEvent("battery_opt_settings", bundleOf(Pair("message", e.message)))
             } catch (e: SecurityException) {
                 e.printStackTrace()
-                Crashlytics.logException(e)
+                app.analytics.logEvent("battery_opt_settings", bundleOf(Pair("message", e.message)))
             } else startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
                     .setData("package:${context.packageName}".toUri()))
             false

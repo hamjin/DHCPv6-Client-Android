@@ -7,8 +7,9 @@ import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
+import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.widget.SmartSnackbar
-import com.crashlytics.android.Crashlytics
 
 class MainActivity : AppCompatActivity() {
     private lateinit var serviceSwitch: Switch
@@ -21,11 +22,11 @@ class MainActivity : AppCompatActivity() {
         customTabsIntent.launchUrl(this, url)
     } catch (e: ActivityNotFoundException) {
         e.printStackTrace()
-        Crashlytics.logException(e)
+        app.analytics.logEvent("launch_url", bundleOf(Pair("message", e.message)))
         SmartSnackbar.make(url.toString()).show()
     } catch (e: SecurityException) {
         e.printStackTrace()
-        Crashlytics.logException(e)
+        app.analytics.logEvent("launch_url", bundleOf(Pair("message", e.message)))
         SmartSnackbar.make(url.toString()).show()
     } else SmartSnackbar.make(url.toString()).show()
 
