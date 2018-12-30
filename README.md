@@ -3,8 +3,9 @@
 [![CircleCI](https://circleci.com/gh/Mygod/DHCPv6-Client-Android.svg?style=svg)](https://circleci.com/gh/Mygod/DHCPv6-Client-Android)
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
 [![Releases](https://img.shields.io/github/downloads/Mygod/DHCPv6-Client-Android/total.svg)](https://github.com/Mygod/DHCPv6-Client-Android/releases)
+[![Language: Kotlin](https://img.shields.io/github/languages/top/Mygod/DHCPv6-Client-Android.svg)](https://github.com/Mygod/DHCPv6-Client-Android/search?l=kotlin)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/665184d6cb6d446680c5ec56680c59ce)](https://www.codacy.com/app/Mygod/DHCPv6-Client-Android?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Mygod/DHCPv6-Client-Android&amp;utm_campaign=Badge_Grade)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/github/license/Mygod/DHCPv6-Client-Android.svg)](https://github.com/Mygod/DHCPv6-Client-Android/blob/master/LICENSE)
 
 Requires root, obviously.  
 <a href="https://play.google.com/store/apps/details?id=be.mygod.dhcpv6client" target="_blank"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="60"></a>
