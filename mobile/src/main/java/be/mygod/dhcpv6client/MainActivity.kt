@@ -7,8 +7,7 @@ import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
-import be.mygod.dhcpv6client.App.Companion.app
+import androidx.lifecycle.Observer
 import be.mygod.dhcpv6client.widget.SmartSnackbar
 
 class MainActivity : AppCompatActivity() {
@@ -30,22 +29,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         serviceSwitch = findViewById(R.id.service_switch)
-        serviceSwitch.setOnCheckedChangeListener { _, value -> Dhcp6cService.enabled = value }
+        serviceSwitch.setOnCheckedChangeListener { _, value -> Dhcp6cService.enabled.value = value }
         SmartSnackbar.Register(lifecycle, findViewById(R.id.fragment_holder))
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Dhcp6cService.enabledChanged[this] = { serviceSwitch.isChecked = it }
+        Dhcp6cService.enabled.observe(this, Observer<Boolean> { serviceSwitch.isChecked = it })
     }
 
     override fun onResume() {
         super.onResume()
-        Dhcp6cService.enabled = Dhcp6cService.enabled
-    }
-
-    override fun onStop() {
-        Dhcp6cService.enabledChanged -= this
-        super.onStop()
+        Dhcp6cService.enabled.value = Dhcp6cService.enabled.value
     }
 }

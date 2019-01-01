@@ -1,7 +1,9 @@
 package be.mygod.dhcpv6client
 
 import android.annotation.TargetApi
-import android.app.*
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
 import android.content.Intent
 import android.net.*
 import android.os.Build
@@ -9,8 +11,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import androidx.core.os.postDelayed
+import androidx.lifecycle.MutableLiveData
 import be.mygod.dhcpv6client.App.Companion.app
-import be.mygod.dhcpv6client.util.StickyEvent1
 import be.mygod.dhcpv6client.widget.SmartSnackbar
 import com.crashlytics.android.Crashlytics
 import java.io.IOException
@@ -19,21 +21,19 @@ class Dhcp6cService : Service() {
     companion object {
         private const val TAG = "Dhcp6cService"
         var running = false
-        var enabled: Boolean
-            get() = BootReceiver.enabled
-            set(value) {
+        val enabled = MutableLiveData<Boolean>().apply {
+            value = BootReceiver.enabled
+            observeForever {
                 val intent = Intent(app, Dhcp6cService::class.java)
-                if (value && !Dhcp6cService.running) {
+                if (it && !Dhcp6cService.running) {
                     if (app.backgroundUnavailable) @TargetApi(26) {
                         // this block can only be reached on API 26+
                         app.startForegroundService(intent)
                     } else app.startService(intent)
-                } else if (!value && Dhcp6cService.running) app.stopService(intent)
-                if (value == BootReceiver.enabled) return
-                BootReceiver.enabled = value
-                enabledChanged(value)
+                } else if (!it && Dhcp6cService.running) app.stopService(intent)
+                BootReceiver.enabled = it
             }
-        val enabledChanged = StickyEvent1 { enabled }
+        }
     }
 
     private val connectivity by lazy { getSystemService<ConnectivityManager>()!! }
@@ -127,7 +127,7 @@ class Dhcp6cService : Service() {
                 Crashlytics.logException(e)
                 e.printStackTrace()
                 stopSelf(startId)
-                enabled = false
+                enabled.value = false
             }
         }
         return START_STICKY
