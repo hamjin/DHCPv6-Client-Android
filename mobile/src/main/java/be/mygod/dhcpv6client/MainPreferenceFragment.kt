@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.lifecycle.Observer
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -25,6 +26,8 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.pref_main)
+        val addresses = findPreference<Preference>("service.addresses")
+        Dhcp6cDaemon.addresses.observe(this, Observer { addresses.summary = it.value })
         val backgroundRestriction = findPreference<SwitchPreference>("service.backgroundRestriction")
         this.backgroundRestriction = backgroundRestriction
         if (Build.VERSION.SDK_INT < 23 || app.backgroundUnavailable) {

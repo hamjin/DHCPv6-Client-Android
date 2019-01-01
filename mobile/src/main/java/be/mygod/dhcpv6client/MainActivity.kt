@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         serviceSwitch = findViewById(R.id.service_switch)
         serviceSwitch.setOnCheckedChangeListener { _, value -> Dhcp6cService.enabled.value = value }
         SmartSnackbar.Register(lifecycle, findViewById(R.id.fragment_holder))
-        Dhcp6cService.enabled.observe(this, Observer<Boolean> { serviceSwitch.isChecked = it })
+        Dhcp6cService.enabled.observe(this, Observer { serviceSwitch.isChecked = it })
     }
 
     override fun onResume() {

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <Preference
+        app:key="service.addresses"
+        app:icon="@drawable/ic_image_looks_6"
+        app:title="@string/settings_service_addresses"
+        app:enableCopying="true"/>
     <SwitchPreference
         app:key="service.backgroundRestriction"
         app:icon="@drawable/ic_device_battery_alert"

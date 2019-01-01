@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">DHCPv6 Client</string>
+    <string name="settings_service_addresses">DHCPv6 Addresses</string>
     <string name="settings_service_battery_killer">Background restriction</string>
     <string name="settings_service_battery_killer_summary_off">Service can run in the background</string>
     <string name="settings_service_battery_killer_summary_on">Android system will kill the service after being left in

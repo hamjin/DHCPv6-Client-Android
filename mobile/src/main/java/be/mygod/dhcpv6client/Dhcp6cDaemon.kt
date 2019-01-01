@@ -4,6 +4,7 @@ import android.os.Build
 import android.system.ErrnoException
 import android.system.OsConstants
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.util.thread
 import be.mygod.dhcpv6client.widget.SmartSnackbar
@@ -14,7 +15,19 @@ import java.io.InterruptedIOException
 import java.util.concurrent.ArrayBlockingQueue
 
 class Dhcp6cDaemon(interfaces: String) {
-    private object Success : IOException()
+    companion object Success : IOException() {
+        private val ifaddrconfParser = "ifaddrconf: (add|remove) an address ([^/]*)/(\\d+) on (.*)\$".toRegex()
+
+        val addressLookup = HashMap<String, MutableSet<Pair<String, Int>>>()
+        val addresses = MutableLiveData<Lazy<String>>()
+        fun postAddressUpdate() = addresses.postValue(lazy {
+            synchronized(addressLookup) {
+                addressLookup.entries.flatMap { entry ->
+                    entry.value.map { Triple(it.first, entry.key, it.second) }
+                }.joinToString("\n") { "${it.first}%${it.second}/${it.third}" }
+            }
+        })
+    }
 
     private val process = ProcessBuilder("su", "-c", "echo Success && cd " + Dhcp6cManager.root +
             " && exec " + File(app.applicationInfo.nativeLibraryDir, Dhcp6cManager.DHCP6C).absolutePath +
@@ -39,8 +52,17 @@ class Dhcp6cDaemon(interfaces: String) {
             }
             try {
                 process.inputStream.bufferedReader().forEachLine {
-                    if (it == "Success" && initializing) pushException(Success)
-                    else Crashlytics.log(if (initializing) Log.ERROR else Log.INFO, Dhcp6cManager.DHCP6C, it)
+                    if (it == "Success" && initializing) pushException(Success) else {
+                        Crashlytics.log(if (initializing) Log.ERROR else Log.INFO, Dhcp6cManager.DHCP6C, it)
+                        if (initializing) return@forEachLine
+                        val match = ifaddrconfParser.find(it) ?: return@forEachLine
+                        val address = Pair(match.groupValues[2], match.groupValues[3].toInt())
+                        synchronized(addressLookup) {
+                            if (addressLookup.getOrPut(match.groupValues[4]) { mutableSetOf() }.run {
+                                        if (match.groupValues[1] == "add") add(address) else remove(address)
+                                    }) postAddressUpdate()
+                        }
+                    }
                 }
                 process.waitFor()
                 val eval = process.exitValue()
@@ -51,6 +73,11 @@ class Dhcp6cDaemon(interfaces: String) {
                 }
             } catch (e: IOException) {
                 pushException(e)
+            }
+            synchronized(addressLookup) {
+                if (addressLookup.isEmpty()) return@synchronized
+                addressLookup.clear()
+                postAddressUpdate()
             }
             onExit(this)
         }

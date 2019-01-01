@@ -94,7 +94,10 @@ class Dhcp6cService : Service() {
         }
 
         override fun onLost(network: Network?) {
-            working.remove(network ?: return)
+            val ifname = working.remove(network ?: return)?.interfaceName
+            if (ifname != null) synchronized(Dhcp6cDaemon.addressLookup) {
+                if (Dhcp6cDaemon.addressLookup.remove(ifname) != null) Dhcp6cDaemon.postAddressUpdate()
+            }
             app.handler.removeCallbacksAndMessages(network)
             reporting.remove(network)
         }

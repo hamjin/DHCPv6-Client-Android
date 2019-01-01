@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DHCPv6 客户端</string>
+    <string name="settings_service_addresses">DHCPv6 地址</string>
     <string name="settings_service_battery_killer">后台限制</string>
     <string name="settings_service_battery_killer_summary_off">服务可以在后台运行</string>
     <string name="settings_service_battery_killer_summary_on">后台时间超过一分钟后 Android
