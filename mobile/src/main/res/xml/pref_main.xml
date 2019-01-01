@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <SwitchPreference
-        android:key="service.backgroundRestriction"
-        android:icon="@drawable/ic_device_battery_alert"
-        android:title="@string/settings_service_battery_killer"
-        android:summaryOff="@string/settings_service_battery_killer_summary_off"
-        android:summaryOn="@string/settings_service_battery_killer_summary_on"
-        android:persistent="false"/>
-    <AutoSummaryEditTextPreference
-        android:key="service.duid"
-        android:persistent="false"
-        android:icon="@drawable/ic_action_perm_identity"
-        android:title="DUID"
-        android:singleLine="true"/>
+        app:key="service.backgroundRestriction"
+        app:icon="@drawable/ic_device_battery_alert"
+        app:title="@string/settings_service_battery_killer"
+        app:summaryOff="@string/settings_service_battery_killer_summary_off"
+        app:summaryOn="@string/settings_service_battery_killer_summary_on"
+        app:persistent="false"/>
+    <EditTextPreference
+        app:key="service.duid"
+        app:persistent="false"
+        app:icon="@drawable/ic_action_perm_identity"
+        app:title="DUID"
+        app:singleLine="true"
+        app:useSimpleSummaryProvider="true"/>
     <Preference
-        android:key="misc.source"
-        android:icon="@drawable/ic_toggle_star"
-        android:title="@string/settings_misc_source"
-        android:summary="@string/settings_misc_source_summary"/>
+        app:key="misc.source"
+        app:icon="@drawable/ic_toggle_star"
+        app:title="@string/settings_misc_source"
+        app:summary="@string/settings_misc_source_summary"/>
     <Preference
-        android:key="misc.donate"
-        android:icon="@drawable/ic_action_card_giftcard"
-        android:title="@string/settings_misc_donate"
-        android:summary="@string/settings_misc_donate_summary"/>
+        app:key="misc.donate"
+        app:icon="@drawable/ic_action_card_giftcard"
+        app:title="@string/settings_misc_donate"
+        app:summary="@string/settings_misc_donate_summary"/>
 </PreferenceScreen>

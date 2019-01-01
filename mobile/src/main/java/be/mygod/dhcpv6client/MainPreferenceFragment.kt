@@ -14,18 +14,18 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.widget.SmartSnackbar
-import com.takisoft.preferencex.PreferenceFragmentCompat
 
 class MainPreferenceFragment : PreferenceFragmentCompat() {
     private var backgroundRestriction: SwitchPreference? = null
     private lateinit var duid: EditTextPreference
 
-    override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.pref_main)
-        val backgroundRestriction = findPreference("service.backgroundRestriction") as SwitchPreference
+        val backgroundRestriction = findPreference<SwitchPreference>("service.backgroundRestriction")
         this.backgroundRestriction = backgroundRestriction
         if (Build.VERSION.SDK_INT < 23 || app.backgroundUnavailable) {
             backgroundRestriction.parent!!.removePreference(backgroundRestriction)
@@ -45,7 +45,7 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
                     .setData("package:${context.packageName}".toUri()))
             false
         }
-        duid = findPreference("service.duid") as EditTextPreference
+        duid = findPreference("service.duid")
         Dhcp6cManager.ensureDuid()
         duid.setOnPreferenceChangeListener { _, newValue ->
             try {
@@ -58,11 +58,11 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
                 false
             }
         }
-        findPreference("misc.source").setOnPreferenceClickListener {
+        findPreference<Preference>("misc.source").setOnPreferenceClickListener {
             (activity as MainActivity).launchUrl("https://github.com/Mygod/DHCPv6-Client-Android".toUri())
             true
         }
-        findPreference("misc.donate").setOnPreferenceClickListener {
+        findPreference<Preference>("misc.donate").setOnPreferenceClickListener {
             EBegFragment().show(fragmentManager ?: return@setOnPreferenceClickListener false, "EBegFragment")
             true
         }
@@ -80,7 +80,9 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
     }
 
     override fun onDisplayPreferenceDialog(preference: Preference?) {
-        if (preference === duid) displayPreferenceDialog(DuidPreferenceDialogFragment(), duid.key)
-        else super.onDisplayPreferenceDialog(preference)
+        if (preference === duid) DuidPreferenceDialogFragment().apply {
+            setKey(duid.key)
+            setTargetFragment(this@MainPreferenceFragment, 0)
+        }.show(fragmentManager ?: return, duid.key) else super.onDisplayPreferenceDialog(preference)
     }
 }
