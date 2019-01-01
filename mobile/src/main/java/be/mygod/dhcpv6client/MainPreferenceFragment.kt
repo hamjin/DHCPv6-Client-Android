@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
-import androidx.fragment.app.DialogFragment
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.SwitchPreference
@@ -64,7 +63,7 @@ class MainPreferenceFragment : PreferenceFragmentCompat() {
             true
         }
         findPreference("misc.donate").setOnPreferenceClickListener {
-            EBegFragment().apply { setStyle(DialogFragment.STYLE_NO_TITLE, 0) }.show(fragmentManager, "EBegFragment")
+            EBegFragment().show(fragmentManager ?: return@setOnPreferenceClickListener false, "EBegFragment")
             true
         }
     }

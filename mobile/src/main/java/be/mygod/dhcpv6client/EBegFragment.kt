@@ -25,6 +25,10 @@ class EBegFragment : DialogFragment(), PurchasesUpdatedListener, BillingClientSt
         private const val TAG = "EBegFragment"
     }
 
+    init {
+        setStyle(DialogFragment.STYLE_NO_TITLE, 0)
+    }
+
     private lateinit var billingClient: BillingClient
     private lateinit var googleSpinner: Spinner
     private var skus: MutableList<SkuDetails>? = null
