@@ -59,10 +59,15 @@ class Dhcp6cService : Service() {
 
         override fun onAvailable(network: Network) =
                 onLinkPropertiesChanged(network, connectivity.getLinkProperties(network))
-        override fun onLinkPropertiesChanged(network: Network, link: LinkProperties?) {
-            val ifname = link?.interfaceName ?: return
+        override fun onLinkPropertiesChanged(network: Network, link: LinkProperties) {
             val oldLink = working.put(network, link)
-            if (oldLink == null) try { // prevent re-requesting the same interface
+            val ifname = link.interfaceName
+            if (ifname == null) {
+                if (oldLink?.interfaceName != null) onLost(network)
+                return
+            }
+            if (ifname != oldLink?.interfaceName) try {
+                onLost(oldLink?.interfaceName)
                 Dhcp6cManager.startInterface(ifname)
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -94,12 +99,15 @@ class Dhcp6cService : Service() {
         }
 
         override fun onLost(network: Network?) {
-            val ifname = working.remove(network ?: return)?.interfaceName
-            if (ifname != null) synchronized(Dhcp6cDaemon.addressLookup) {
-                if (Dhcp6cDaemon.addressLookup.remove(ifname) != null) Dhcp6cDaemon.postAddressUpdate()
-            }
+            onLost(working.remove(network ?: return)?.interfaceName)
             app.handler.removeCallbacksAndMessages(network)
             reporting.remove(network)
+        }
+        private fun onLost(ifname: String?) {
+            if (ifname == null) return
+            synchronized(Dhcp6cDaemon.addressLookup) {
+                if (Dhcp6cDaemon.addressLookup.remove(ifname) != null) Dhcp6cDaemon.postAddressUpdate()
+            }
         }
     }
 
