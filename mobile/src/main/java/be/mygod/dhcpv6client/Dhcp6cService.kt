@@ -108,6 +108,7 @@ class Dhcp6cService : Service() {
             synchronized(Dhcp6cDaemon.addressLookup) {
                 if (Dhcp6cDaemon.addressLookup.remove(ifname) != null) Dhcp6cDaemon.postAddressUpdate()
             }
+            Dhcp6cManager.stopInterface(ifname)
         }
     }
 
