@@ -59,8 +59,8 @@ class Dhcp6cService : Service() {
 
         override fun onAvailable(network: Network) =
                 onLinkPropertiesChanged(network, connectivity.getLinkProperties(network))
-        override fun onLinkPropertiesChanged(network: Network, link: LinkProperties) {
-            val oldLink = working.put(network, link)
+        override fun onLinkPropertiesChanged(network: Network, link: LinkProperties?) {
+            val oldLink = working.put(network, link ?: return)
             val ifname = link.interfaceName
             if (ifname == null) {
                 if (oldLink?.interfaceName != null) onLost(network)
