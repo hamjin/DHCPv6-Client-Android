@@ -1,4 +1,4 @@
-[submodule "mobile/src/main/cpp/wide-dhcpv6"]
-	path = mobile/src/main/cpp/wide-dhcpv6
+[submodule "app/src/main/cpp/wide-dhcpv6"]
+	path = app/src/main/cpp/wide-dhcpv6
 	url = https://github.com/Mygod/wide-dhcpv6.git
 	branch = android
