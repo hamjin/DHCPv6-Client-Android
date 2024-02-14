@@ -1,12 +1,10 @@
 package be.mygod.dhcpv6client
 
-import android.annotation.TargetApi
 import android.graphics.drawable.Icon
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.lifecycle.Observer
 
-@TargetApi(24)
 class Dhcp6cTileService : TileService() {
     private val tile by lazy { Icon.createWithResource(application, R.drawable.ic_image_looks_6) }
     private val enabledObserver = Observer<Boolean> { updateTile(enabled = it) }

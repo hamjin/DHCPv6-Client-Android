@@ -1,17 +1,11 @@
 package be.mygod.dhcpv6client
 
-import android.os.Build
-import android.system.ErrnoException
-import android.system.OsConstants
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.util.thread
 import be.mygod.dhcpv6client.widget.SmartSnackbar
-import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.io.IOException
-import java.io.InterruptedIOException
 import java.util.concurrent.ArrayBlockingQueue
 
 class Dhcp6cDaemon(interfaces: String) {
@@ -29,9 +23,10 @@ class Dhcp6cDaemon(interfaces: String) {
         })
     }
 
-    private val process = ProcessBuilder("su", "-c", "echo Success && cd " + Dhcp6cManager.root +
+    private val process = ProcessBuilder("su", "-c", "echo Success" +
             " && exec " + File(app.applicationInfo.nativeLibraryDir, Dhcp6cManager.DHCP6C).absolutePath +
             " -Df -p ${Dhcp6cManager.pidFile.absolutePath} $interfaces")    // TODO log level configurable?
+            .directory(Dhcp6cManager.root)
             .redirectErrorStream(true)
             .start()!!
     private val excQueue = ArrayBlockingQueue<IOException>(1)   // ArrayBlockingQueue doesn't want null
@@ -46,14 +41,11 @@ class Dhcp6cDaemon(interfaces: String) {
                     initializing = false
                 } else {
                     ioException.printStackTrace()
-                    if (ioException !is InterruptedIOException && (ioException.cause as? ErrnoException)?.errno !=
-                            OsConstants.EBADF) Crashlytics.logException(ioException)
                 }
             }
             try {
                 process.inputStream.bufferedReader().forEachLine {
                     if (it == "Success" && initializing) pushException(Success) else {
-                        Crashlytics.log(if (initializing) Log.ERROR else Log.INFO, Dhcp6cManager.DHCP6C, it)
                         if (initializing) return@forEachLine
                         val match = ifaddrconfParser.find(it) ?: return@forEachLine
                         val address = Pair(match.groupValues[2], match.groupValues[3].toInt())
@@ -88,7 +80,7 @@ class Dhcp6cDaemon(interfaces: String) {
 
     fun waitFor() = process.waitFor()
     fun destroy() {
-        if (Build.VERSION.SDK_INT >= 26) process.destroyForcibly() else process.destroy()
+        process.destroyForcibly()
         process.waitFor()
     }
 }

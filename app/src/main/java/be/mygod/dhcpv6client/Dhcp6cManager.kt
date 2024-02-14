@@ -1,11 +1,9 @@
 package be.mygod.dhcpv6client
 
 import android.os.FileObserver
-import android.util.Log
 import be.mygod.dhcpv6client.App.Companion.app
 import be.mygod.dhcpv6client.room.Database
 import be.mygod.dhcpv6client.room.InterfaceStatement
-import com.crashlytics.android.Crashlytics
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -25,7 +23,7 @@ object Dhcp6cManager {
 
     class NativeProcessError(message: String?) : IOException(message)
 
-    val root = app.deviceStorage.noBackupFilesDir
+    val root: File = app.deviceStorage.noBackupFilesDir
     val pidFile = File(root, DHCP6C_PID)
     private val config = File(root, "dhcp6c.conf")
     private val duidFile = File(root, "dhcp6c-duid")
@@ -78,7 +76,6 @@ id-assoc na %num { };""")) != -1L
     private fun startDaemonLocked(interfaces: Iterable<String>) {
         check(daemon == null)
         ensureDuid()
-        Crashlytics.log(Log.DEBUG, DHCP6C, "Starting ${interfaces.joinToString()}...")
         val newDaemon = Dhcp6cDaemon(interfaces.joinToString(" "))
         daemon = newDaemon
         newDaemon.startWatching {
@@ -99,7 +96,6 @@ id-assoc na %num { };""")) != -1L
         process.waitFor()
         val eval = process.exitValue()
         if (eval != 0) throw NativeProcessError("$eval: $result")
-        if (result.isNotBlank()) Crashlytics.log(Log.WARN, DHCP6CTL, result)
     }
 
     /**
@@ -133,7 +129,6 @@ id-assoc na %num { };""")) != -1L
                 }
                 startDaemonLocked(listOf(iface))
             } else {
-                Crashlytics.log(Log.DEBUG, DHCP6CTL, "Requesting $iface...")
                 sendControlCommand("start", "interface", iface)
             }
         }
@@ -151,7 +146,6 @@ id-assoc na %num { };""")) != -1L
         sendControlCommand("stop", "interface", iface)
     } catch (e: NativeProcessError) {
         e.printStackTrace()
-        Crashlytics.logException(e)
     }
 
     /**
@@ -165,9 +159,9 @@ id-assoc na %num { };""")) != -1L
         if (!pidFile.isFile) return
         val barrier = ArrayBlockingQueue<Unit>(1)
         // we don't have read access to pid file so we have to observe its parent directory
-        val observer = object : FileObserver(root.absolutePath, FileObserver.DELETE) {
+        val observer = object : FileObserver(File(root.absolutePath), DELETE) {
             override fun onEvent(event: Int, path: String?) {
-                if (event == FileObserver.DELETE && path == DHCP6C_PID) barrier.put(Unit)
+                if (event == DELETE && path == DHCP6C_PID) barrier.put(Unit)
                 stopWatching()
             }
         }

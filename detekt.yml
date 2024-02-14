@@ -106,7 +106,7 @@ exceptions:
     active: true
   ThrowingExceptionsWithoutMessageOrCause:
     active: true
-    exceptions: 'IllegalArgumentException,IllegalStateException,IOException'
+    exceptions: [IllegalArgumentException,IllegalStateException,IOException]
   ThrowingNewInstanceOfSameException:
     active: true
   TooGenericExceptionCaught:
@@ -325,16 +325,16 @@ style:
     includeLineWrapping: false
   ForbiddenComment:
     active: true
-    values: 'TODO:,FIXME:,STOPSHIP:'
+    values: ["TODO:","FIXME:","STOPSHIP:"]
   ForbiddenImport:
     active: true
-    imports: ''
+    imports: []
   ForbiddenVoid:
     active: true
   FunctionOnlyReturningConstant:
     active: true
     ignoreOverridableFunction: true
-    excludedFunctions: 'describeContents'
+    excludedFunctions: [describeContents]
   LoopWithTooManyJumpStatements:
     active: true
     maxJumpCount: 1

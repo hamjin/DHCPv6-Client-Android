@@ -5,7 +5,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.PowerManager
 import androidx.core.content.getSystemService
 import be.mygod.dhcpv6client.App.Companion.app
@@ -25,8 +24,7 @@ class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         context.apply {
-            if (Build.VERSION.SDK_INT < 26 ||
-                            getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName) != false) {
+            if (getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName) != false) {
                 startService(Intent(this, Dhcp6cService::class.java))
             }
         }
